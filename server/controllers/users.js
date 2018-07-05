@@ -1,9 +1,9 @@
 const User = require('../models/User');
 
 function authenticate(creds, callback) {
-    var username = creds.username;
+    var name = creds.name;
     var password = creds.password;
-    User.findOne({username: username}, function(err, user) {
+    User.findOne({name: name}, function(err, user) {
         if (err) { // err indicates error, not no result found
             callback({'err': err});
             return;
@@ -45,7 +45,7 @@ function getUserById(id, callback) {
 }
 
 function getUserByName(name, callback) {
-    User.findOne({username: name}, function(err, user) {
+    User.findOne({name: name}, function(err, user) {
         if (err) {
             callback({'status': false,
                       'message': 'Database error finding user with name ' + name + '!'});
@@ -84,7 +84,7 @@ function deleteUserById(id, callback) {
 }
 
 function deleteUserByName(name, callback) {
-    User.findOneAndRemove({username: name}, function(err, user) {
+    User.findOneAndRemove({name: name}, function(err, user) {
         if (err) {
             callback({'status': false,
                       'message': 'Database error deleting user ' + name + '!'});
