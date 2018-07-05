@@ -18,7 +18,7 @@ mongoose.connect(url, function(err) {
     if (err) throw err;
 });
 
-const app = next({dev});
+const app = next({dir: './client', dev});
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
