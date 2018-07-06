@@ -26,7 +26,7 @@ export default class extends React.Component {
         var username = this.state.username;
         var password = this.state.password;
         var data = {
-            'username': username,
+            'name': username,
             'password': password
         }
 

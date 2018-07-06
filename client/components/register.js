@@ -33,7 +33,7 @@ export default class extends React.Component {
         }
 
         var data = {
-            'username': username,
+            'name': username,
             'password': password
         }
 
