@@ -5,8 +5,8 @@ const Game = require('../models/Game');
 const gameController = require('../controllers/games');
 
 // Get specific game
-router.get('/:id', function(req, res) {
-    gameController.getGame(req.params.id, function(getRes) {
+router.get('/:name', function(req, res) {
+    gameController.getGameByName(req.params.name, function(getRes) {
         res.json(getRes);
     });
 });
