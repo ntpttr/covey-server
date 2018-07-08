@@ -13,21 +13,100 @@ var bggOptions = {
 
 var bgg = require('bgg')(bggOptions);
 
-function getGameByName(name, callback) {
+function getGameDb(ident, callback) {
+    getGameByIdDb(ident, function(res) {
+        if (res.status) {
+            callback(res);
+        } else {
+            // If game not found by ID, try name.
+            getGameByNameDb(ident, callback);
+        }
+    });
+}
+
+function getGameByIdDb(id, callback) {
+    Game.findById(id, function(err, game) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error finding game with id ' + id + '!'});
+        } else if (game) {
+            callback({'status': true, 'game': game});
+        } else {
+            callback({'status': false,
+                      'message': 'Game with ID ' + id + ' not found!'});
+        }
+    });
+}
+
+function getGameByNameDb(name, callback) {
+    Game.findOne({name: name.toLowerCase()}, function(err, game) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error finding game with name ' + name + '!'});
+        } else if (game) {
+            callback({'status': true, 'game': game});
+        } else {
+            callback({'status': false,
+                      'message': 'Game with name ' + name + ' not found!'});
+        }
+    });
+}
+
+function deleteGame(ident, callback) {
+    deleteGameById(ident, function(res) {
+        if (res.status) {
+            callback(res);
+        } else {
+            // If game not found by ID, try name.
+            deleteGameByName(ident, callback);
+        }
+    });
+}
+
+function deleteGameById(id, callback) {
+    Game.findByIdAndRemove(id, function(err, game) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error finding game with id ' + id + '!'});
+        } else if (game) {
+            callback({'status': true});
+        } else {
+            callback({'status': false,
+                      'message': 'Game with ID ' + id + ' not found!'});
+        }
+    });
+}
+
+function deleteGameByName(name, callback) {
+    Game.findOneAndRemove({name: name.toLowerCase()}, function(err, game) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error deleting game ' + name + '!'});
+        } else if (game) {
+            callback({'status': true,
+                      'message': 'Game ' + name + ' deleted successfully.'});
+        } else {
+            callback({'status': false,
+                      'message': 'Game ' + name + ' not found.'});
+        }
+    });
+}
+
+function getGameBgg(name, callback) {
     //TODO(ntpttr): Add error handling if bgg can't connect.
-    searchGame(name, function(search) {
+    searchGameBgg(name, function(search) {
         if (search.items.total != 1) {
             callback({'status': false, 'message': 'Game ' + name + ' not found!'});
             return;
         }
         var id = search.items.item.id;
-        getGameById(id, function(game) {
+        getGameByIdBgg(id, function(game) {
             var item = game.items.item;
             var name;
             // Get primary name from list of possible alternates
             for (i=0; i<item.name.length; i++) {
                 if (item.name[i].type == 'primary') {
-                    name = item.name[i].value;
+                    name = item.name[i].value.toLowerCase();
                     break;
                 }
             }
@@ -45,7 +124,7 @@ function getGameByName(name, callback) {
     });
 }
 
-function getGameById(id, callback) {
+function getGameByIdBgg(id, callback) {
     bgg('thing', {
         id: id,
         type: 'boardgame'
@@ -55,7 +134,7 @@ function getGameById(id, callback) {
     });
 }
 
-function searchGame(name, callback) {
+function searchGameBgg(name, callback) {
     bgg('search', {
         query: name,
         type: 'boardgame',
@@ -66,4 +145,4 @@ function searchGame(name, callback) {
     });
 }
 
-module.exports = { getGameByName }
+module.exports = { getGameDb, deleteGame, getGameBgg }

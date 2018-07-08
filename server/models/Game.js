@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 
 let gameSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, index: { unique: true } },
     description: { type: String },
     thumbnail: { type: String },
     image: { type: String },
