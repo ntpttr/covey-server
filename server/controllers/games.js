@@ -33,7 +33,7 @@ function getGameByIdDb(id, callback) {
             callback({'status': true, 'game': game});
         } else {
             callback({'status': false,
-                      'message': 'Game with ID ' + id + ' not found!'});
+                      'message': 'Game with ID ' + id + ' not found in the database.'});
         }
     });
 }
@@ -47,7 +47,7 @@ function getGameByNameDb(name, callback) {
             callback({'status': true, 'game': game});
         } else {
             callback({'status': false,
-                      'message': 'Game with name ' + name + ' not found!'});
+                      'message': 'Game with name ' + name + ' not found in the database.'});
         }
     });
 }
@@ -72,7 +72,7 @@ function deleteGameById(id, callback) {
             callback({'status': true});
         } else {
             callback({'status': false,
-                      'message': 'Game with ID ' + id + ' not found!'});
+                      'message': 'Game with ID ' + id + ' not found in the database.'});
         }
     });
 }
@@ -87,7 +87,7 @@ function deleteGameByName(name, callback) {
                       'message': 'Game ' + name + ' deleted successfully.'});
         } else {
             callback({'status': false,
-                      'message': 'Game ' + name + ' not found.'});
+                      'message': 'Game ' + name + ' not found in the database.'});
         }
     });
 }

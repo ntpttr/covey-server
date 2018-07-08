@@ -4,7 +4,9 @@ const mongoose = require('mongoose');
 
 let groupSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    users: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ]
+    description: { type: String },
+    users: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
+    games: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Game' } ]
 });
 
 groupSchema.methods.addUser = function(userId) {
@@ -21,6 +23,23 @@ groupSchema.methods.deleteUser = function(userId) {
     if (index >= 0) {
         this.users.splice(index, 1);
     }
+    return this.save();
+}
+
+groupSchema.methods.addGame = function(gameId) {
+    if (this.games.indexOf(gameId) === -1) {
+        if (mongoose.Types.ObjectId.isValid(gameId)) {
+            this.games.push(gameId);
+        }
+    }   
+    return this.save();
+}
+
+groupSchema.methods.deleteGame = function(gameId) {
+    var index = this.games.indexOf(gameId);
+    if (index >= 0) {
+        this.games.splice(index, 1); 
+    }   
     return this.save();
 }
 

@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Group = require('../models/Group');
 const User = require('../models/User');
+const gameController = require('../controllers/games');
 const groupController = require('../controllers/groups');
 const userController = require('../controllers/users');
 
@@ -108,6 +109,68 @@ router.delete('/:groupIdent/users/:userIdent', function(req, res) {
             } catch(err) {
                 res.json({'status': false,
                           'message': 'Error deleting user from group.'});
+            }
+        });
+    });
+});
+
+// Add game to group
+router.post('/:groupIdent/games/:gameIdent', function (req, res, next) {
+    var groupIdent = req.params.groupIdent;
+    var gameIdent = req.params.gameIdent;
+    groupController.getGroup(groupIdent, function(groupRes) {
+        if (!groupRes.status) {
+            res.json({'status': false, 'message': groupRes.message});
+            return;
+        } else if (groupRes.groups.length > 1) {
+            res.json({'status': false,
+                      'message': 'More than one group found with name ' + groupIdent + '. Use ID.'});
+            return;
+        }
+        group = groupRes.groups[0];
+        gameController.getGameDb(gameIdent, function(gameRes) {
+            if (!gameRes.status) {
+                res.json({'status': false, 'message': gameRes.message});
+                return;
+            }
+            game = gameRes.game;
+            try {
+                group.addGame(game._id);
+                res.json({'status': true});
+            } catch(err) {
+                res.json({'status': false,
+                          'message': 'Error adding game to group.'});
+            }
+        });
+    }); 
+});
+
+// Remove user from group
+router.delete('/:groupIdent/games/:gameIdent', function(req, res) {
+    var groupIdent = req.params.groupIdent;
+    var gameIdent = req.params.gameIdent;
+    groupController.getGroup(groupIdent, function(groupRes) {
+        if (!groupRes.status) {
+            res.json({'status': false, 'message': groupRes.message});
+            return;
+        } else if (groupRes.groups.length > 1) {
+            res.json({'status': false,
+                      'message': 'More than one group found with name ' + groupIdent + '. Use ID.'});
+            return;
+        }
+        group = groupRes.groups[0];
+        gameController.getGameDb(gameIdent, function(gameRes) {
+            if (!gameRes.status) {
+                res.json({'status': false, 'message': gameRes.message});
+                return;
+            }
+            game = gameRes.game;
+            try {
+                group.deleteGame(game._id);
+                res.json({'status': true});
+            } catch(err) {
+                res.json({'status': false,
+                          'message': 'Error deleting game from group.'});
             }
         });
     });
