@@ -13,6 +13,7 @@ const url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
 const users = require('./server/routes/users');
 const groups = require('./server/routes/groups');
+const games = require('./server/routes/games')
 
 mongoose.connect(url, function(err) {
     if (err) throw err;
@@ -32,6 +33,7 @@ app.prepare().then(() => {
     // Server-side API
     server.use('/groups', groups);
     server.use('/users', users);
+    server.use('/games', games);
 
     server.get('*', (req, res) => {
         return handle(req, res);
