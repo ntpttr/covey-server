@@ -1,19 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const User = require('../models/User');
 const userController = require('../controllers/users');
 
 // List all users
 router.get('/', function(req, res) {
-    User.find({}, function(err, users) {
-        if (err) {
-            res.json({'status': false,
-                      'message': 'Database error finding users!'});
-        } else {
-            res.json({'status': true,
-                      'users': users});
-        }
+    userController.getUsers(function(getRes) {
+        res.json(getRes);
     });
 });
 
@@ -26,42 +19,16 @@ router.get('/:ident', function(req, res) {
 
 // Create new user
 router.post('/', function(req, res) {
-    user = new User(req.body);
-
-    user.save(function(err) {
-        if (err) {
-            var errMessage = '';
-            if (err.code === 11000) {
-                // Duplicate username found
-                errMessage = 'Username already exists!';
-            } else {
-                errMessage = 'Error saving user!';
-            }
-            res.json({'status': false,
-                      'message': errMessage});
-            return;
-        }
-        res.json({'status': true,
-                  'user': user});
+    userController.createUser(req.body, function(createRes) {
+        res.json(createRes);
     });
 });
 
 // Update an existing user
 router.put('/:ident', function(req, res) {
     var userIdent = req.params.ident;
-    userController.getUser(userIdent, function(userRes) {
-        if (!userRes.status) {
-            res.json({'status': false, 'message': userRes.message});
-            return;
-        }
-        user = userRes.user;
-        Object.assign(user, req.body).save((err, user) => {
-            if (err) {
-                res.json({'status': false, message: 'Error updating user!'});
-            } else {
-                res.json({'status': true, 'user': user});
-            }
-        }); 
+    userController.updateUser(userIdent, req.body, function(updateRes) {
+        res.json(updateRes);
     });
 });
 

@@ -19,6 +19,18 @@ function authenticate(creds, callback) {
     }); 
 };
 
+function getUsers(callback) {
+    User.find({}, function(err, users) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error finding users!'});
+        } else {
+            callback({'status': true,
+                      'users': users});
+        }
+    });
+}
+
 function getUser(ident, callback) {
     getUserById(ident, function(res) {
         if (res.status) {
@@ -56,6 +68,44 @@ function getUserByName(name, callback) {
                       'message': 'User with name ' + name + ' not found!'});
         }
     }); 
+}
+
+function createUser(properties, callback) {
+    user = new User(properties);
+
+    user.save(function(err) {
+        if (err) {
+            var errMessage = '';
+            if (err.code === 11000) {
+                // Duplicate username found
+                errMessage = 'Username already exists!';
+            } else {
+                errMessage = 'Error saving user!';
+            }
+            callback({'status': false,
+                      'message': errMessage});
+            return;
+        }
+        callback({'status': true,
+                  'user': user});
+    });
+}
+
+function updateUser(ident, properties, callback) {
+    getUser(ident, function(userRes) {
+        if (!userRes.status) {
+            callback({'status': false, 'message': userRes.message});
+            return;
+        }
+        user = userRes.user;
+        Object.assign(user, properties).save((err, user) => {
+            if (err) {
+                callback({'status': false, message: 'Error updating user!'});
+            } else {
+                callback({'status': true, 'user': user});
+            }
+        }); 
+    });
 }
 
 function deleteUser(ident, callback) {
@@ -99,4 +149,4 @@ function deleteUserByName(name, callback) {
 }
 
 
-module.exports = { authenticate, getUser, deleteUser };
+module.exports = { authenticate, getUsers, getUser, createUser, updateUser, deleteUser };
