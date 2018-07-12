@@ -12,14 +12,16 @@ router.get('/', function(req, res) {
 
 // Get specific user
 router.get('/:ident', function(req, res) {
-    userController.getUser(req.params.ident, function(getRes) {
+    var userIdent = req.params.ident;
+    userController.getUser(userIdent, function(getRes) {
         res.json(getRes);
     });
 });
 
 // Create new user
 router.post('/', function(req, res) {
-    userController.createUser(req.body, function(createRes) {
+    var properties = req.body;
+    userController.createUser(properties, function(createRes) {
         res.json(createRes);
     });
 });
@@ -27,7 +29,8 @@ router.post('/', function(req, res) {
 // Update an existing user
 router.put('/:ident', function(req, res) {
     var userIdent = req.params.ident;
-    userController.updateUser(userIdent, req.body, function(updateRes) {
+    var properties = req.body;
+    userController.updateUser(userIdent, properties, function(updateRes) {
         res.json(updateRes);
     });
 });
@@ -42,7 +45,8 @@ router.post('/login', function(req, res) {
 
 // Delete user
 router.delete('/:ident', function(req, res) {
-    userController.deleteUser(req.params.ident, function(deleteRes) {
+    var userIdent = req.params.ident;
+    userController.deleteUser(userIdent, function(deleteRes) {
         res.json(deleteRes);
     });
 });

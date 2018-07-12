@@ -149,4 +149,11 @@ function deleteUserByName(name, callback) {
 }
 
 
-module.exports = { authenticate, getUsers, getUser, createUser, updateUser, deleteUser };
+module.exports = {
+    authenticate,
+    getUsers,
+    getUser,
+    createUser,
+    updateUser,
+    deleteUser
+};
