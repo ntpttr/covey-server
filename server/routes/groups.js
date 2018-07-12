@@ -43,6 +43,29 @@ router.post('/', function(req, res) {
     });
 });
 
+// Update an existing group
+router.put('/:ident', function(req, res) {
+    var groupIdent = req.params.ident;
+    groupController.getGroup(groupIdent, function(groupRes) {
+        if (!groupRes.status) {
+            res.json({'status': false, 'message': groupRes.message});
+            return;
+        } else if (groupRes.groups.length > 1) {
+            res.json({'status': false,
+                      'message': 'More than one group found with name ' + groupIdent + '. Use ID.'});
+            return;
+        }
+        group = groupRes.groups[0];
+        Object.assign(group, req.body).save((err, group) => {
+            if (err) {
+                res.json({'status': false, message: 'Error updating group!'});
+            } else {
+                res.json({'status': true, 'group': group});
+            }
+        }); 
+    });
+});
+
 // Delete group
 router.delete('/:ident', function(req, res) {
     groupController.deleteGroup(req.params.ident, function(deleteRes) {

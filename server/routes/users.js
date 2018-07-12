@@ -46,6 +46,25 @@ router.post('/', function(req, res) {
     });
 });
 
+// Update an existing user
+router.put('/:ident', function(req, res) {
+    var userIdent = req.params.ident;
+    userController.getUser(userIdent, function(userRes) {
+        if (!userRes.status) {
+            res.json({'status': false, 'message': userRes.message});
+            return;
+        }
+        user = userRes.user;
+        Object.assign(user, req.body).save((err, user) => {
+            if (err) {
+                res.json({'status': false, message: 'Error updating user!'});
+            } else {
+                res.json({'status': true, 'user': user});
+            }
+        }); 
+    });
+});
+
 // Login
 router.post('/login', function(req, res) {
     var creds = req.body;
