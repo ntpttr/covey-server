@@ -13,6 +13,18 @@ var bggOptions = {
 
 var bgg = require('bgg')(bggOptions);
 
+function getGamesDb(callback) {
+    Game.find({}, function(err, games) {
+        if (err) {
+            callback({'status': false,
+                      'message': 'Database error finding games!'});
+        } else {
+            callback({'status': true,
+                      'games': games});
+        }
+    });
+}
+
 function getGameDb(ident, callback) {
     getGameByIdDb(ident, function(res) {
         if (res.status) {
@@ -48,6 +60,34 @@ function getGameByNameDb(name, callback) {
         } else {
             callback({'status': false,
                       'message': 'Game with name ' + name + ' not found in the database.'});
+        }
+    });
+}
+
+function saveGameDb(name, callback) {
+    getGameBgg(name, function(getRes) {
+        if (getRes.status) {
+            game = new Game(getRes.game);
+
+            game.save(function(err) {
+                if (err) {
+                    var errMessage = '';
+                    if (err.code === 11000) {
+                        // Game already saved in the database
+                        errMessage = 'Game already saved!';
+                    } else {
+                        errMessage = 'Error saving game!';
+                    }
+                    callback({'status': false,
+                              'message': errMessage});
+                    return;
+                }
+                callback({'status': true,
+                          'game': game});
+            });
+        } else {
+            callback({'status': false,
+                      'message': getRes.message});
         }
     });
 }
@@ -95,12 +135,18 @@ function deleteGameByName(name, callback) {
 function getGameBgg(name, callback) {
     //TODO(ntpttr): Add error handling if bgg can't connect.
     searchGameBgg(name, function(search) {
+        if (search.err) {
+            callback({'status': false, 'message': search.err}); 
+        }
         if (search.items.total != 1) {
             callback({'status': false, 'message': 'Game ' + name + ' not found!'});
             return;
         }
         var id = search.items.item.id;
         getGameByIdBgg(id, function(game) {
+            if (game.err) {
+                callback({'status': false, 'message': game.err});
+            }
             var item = game.items.item;
             var name;
             // Get primary name from list of possible alternates
@@ -125,24 +171,37 @@ function getGameBgg(name, callback) {
 }
 
 function getGameByIdBgg(id, callback) {
-    bgg('thing', {
-        id: id,
-        type: 'boardgame'
-    })
-    .then(function(results) {
-        callback(results);
-    });
+    try {
+        bgg('thing', {
+            id: id,
+        })
+        .then(function(results) {
+            callback(results);
+        });
+    } catch(err) {
+        callback({'err': 'Error getting game from BGG API!'});
+    }
 }
 
 function searchGameBgg(name, callback) {
-    bgg('search', {
-        query: name,
-        type: 'boardgame',
-        exact: 1
-    })
-    .then(function(results) {
-        callback(results);
-    });
+    try {
+        bgg('search', {
+            query: name,
+            type: 'boardgame',
+            exact: 1
+        })
+        .then(function(results) {
+            callback(results);
+        });
+    } catch(err) {
+        callback({'err': 'Error searching for game with BGG API!'});
+    }
 }
 
-module.exports = { getGameDb, deleteGame, getGameBgg }
+module.exports = {
+    getGamesDb,
+    getGameDb,
+    saveGameDb,
+    deleteGame,
+    getGameBgg
+}
