@@ -64,31 +64,58 @@ function getGameByNameDb(name, callback) {
     });
 }
 
-function saveGameDb(name, callback) {
+function saveGameDb(game, callback) {
+    game.save(function(err) {
+        if (err) {
+            var errMessage = '';
+            if (err.code === 11000) {
+                // Game already saved in the database
+                errMessage = 'Game already saved!';
+            } else {
+                errMessage = 'Error saving game!';
+            }
+            callback({'status': false,
+                      'message': errMessage});
+            return;
+        }
+        callback({'status': true,
+                  'game': game});
+    });
+}
+
+function saveCustomGame(properties, callback) {
+    var game = new Game(properties);
+    saveGameDb(game, callback);
+}
+
+function saveBggGame(name, callback) {
     getGameBgg(name, function(getRes) {
         if (getRes.status) {
-            game = new Game(getRes.game);
-
-            game.save(function(err) {
-                if (err) {
-                    var errMessage = '';
-                    if (err.code === 11000) {
-                        // Game already saved in the database
-                        errMessage = 'Game already saved!';
-                    } else {
-                        errMessage = 'Error saving game!';
-                    }
-                    callback({'status': false,
-                              'message': errMessage});
-                    return;
-                }
-                callback({'status': true,
-                          'game': game});
-            });
+            var game = new Game(getRes.game);
+            saveGameDb(game, callback);
         } else {
             callback({'status': false,
                       'message': getRes.message});
         }
+    });
+}
+
+function saveGameDb(game, callback) {
+    game.save(function(err) {
+        if (err) {
+            var errMessage = '';
+            if (err.code === 11000) {
+                // Game already saved in the database
+                errMessage = 'Game already saved!';
+            } else {
+                errMessage = 'Error saving game!';
+            }
+            callback({'status': false,
+                    'message': errMessage});
+            return;
+        }
+        callback({'status': true,
+                  'game': game});
     });
 }
 
@@ -201,7 +228,8 @@ function searchGameBgg(name, callback) {
 module.exports = {
     getGamesDb,
     getGameDb,
-    saveGameDb,
+    saveCustomGame,
+    saveBggGame,
     deleteGame,
     getGameBgg
 }

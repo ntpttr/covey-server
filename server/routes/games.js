@@ -26,10 +26,18 @@ router.get('/bgg/:name', function(req, res) {
     });
 });
 
-// Save game details to database
+// Save custom game details to database
 router.post('/', function(req, res) {
+    var properties = req.body;
+    gameController.saveCustomGame(properties, function(saveRes) {
+        res.json(saveRes);
+    });
+});
+
+// Save bgg game details to database
+router.post('/bgg', function(req, res) {
     var name = req.body.name;
-    gameController.saveGameDb(name, function(saveRes) {
+    gameController.saveBggGame(name, function(saveRes) {
         res.json(saveRes);
     });
 });
