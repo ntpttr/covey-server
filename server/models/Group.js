@@ -5,14 +5,29 @@ const mongoose = require('mongoose');
 let groupSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String },
-    users: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
+    users: [ { 
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        stats: [ {
+            game: { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
+            wins: Number,
+            losses: Number
+        } ]
+    } ],
     games: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Game' } ]
 });
 
 groupSchema.methods.addUser = function(userId) {
     if (this.users.indexOf(userId) === -1) {
         if (mongoose.Types.ObjectId.isValid(userId)) {
-            this.users.push(userId);
+            var stats = []
+            for (var i = 0; i < this.games.length; i++) {
+                stats.push({
+                    game: this.games[i],
+                    wins: 0,
+                    losses: 0
+                })
+            }
+            this.users.push({user: userId, stats: stats});
         }
     }
     return this.save();
