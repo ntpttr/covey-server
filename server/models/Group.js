@@ -34,7 +34,12 @@ groupSchema.methods.addUser = function(userId) {
 }
 
 groupSchema.methods.deleteUser = function(userId) {
-    var index = this.users.indexOf(userId);
+    var index = -1;
+    for (var i=0; i< this.users.length; i++) {
+        if (this.users[i].user == userId) {
+            index = i;
+        }
+    }
     if (index >= 0) {
         this.users.splice(index, 1);
     }
