@@ -1,6 +1,4 @@
 const expect = require('chai').expect;
-const mongoose = require('mongoose');
-const utils = require('../../utils');
 
 const Group = require('../../../server/models/Group');
 const User = require('../../../server/models/User');
