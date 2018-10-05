@@ -107,7 +107,7 @@ function addUser(ident, userIdent, callback) {
             }
             user = userRes.user;
             try {
-                group.addUser(user._id);
+                group.addUser(user._id, user.name);
                 user.addGroup(group._id);
                 callback({'status': true});
             } catch(err) {
@@ -252,6 +252,36 @@ function deleteGroupByName(name, callback) {
     }); 
 }
 
+function updateStats(groupIdent, winners, players, game, callback) {
+    getGroup(groupIdent, function(groupRes) {
+        if (!groupRes.status) {
+            callback({'status': false, 'message': groupRes.message});
+            return;
+        } else if (groupRes.groups.length > 1) {
+            callback({'status': false,
+                      'message': 'More than one group found with name ' + groupIdent + '. Use ID.'});
+            return;
+        }
+        group = groupRes.groups[0];
+        if (group.findGameIndex(game) < 0) {
+            callback({'status': false,
+                      'message': 'Game ' + game + ' not found in group ' + group.name});
+            return;
+        }
+        for (var i = 0; i < group.users.length; i++) {
+            for (var j = 0; j < group.users.stats.length; j++) {
+                if (players.indexOf(group.users[i]) >= 0 && group.users[i].stats[j].game == game) {
+                    if (winners.indexOf(group.users[i].username) >= 0) {
+                        group.users[i].stats[j].wins += 1;
+                    } else {
+                        group.users[i].stats[j].losses += 1;
+                    }
+                }
+            }
+        }
+    });
+}
+
 
 module.exports ={
     getGroups,
@@ -262,5 +292,6 @@ module.exports ={
     deleteUser,
     addGame,
     deleteGame,
-    deleteGroup
+    deleteGroup,
+    updateStats
 };

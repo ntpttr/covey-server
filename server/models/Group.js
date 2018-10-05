@@ -3,20 +3,32 @@
 const mongoose = require('mongoose');
 
 let groupSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name:        { type: String, required: true },
     description: { type: String },
-    users: [ { 
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        stats: [ {
-            game: { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
-            wins: Number,
-            losses: Number
-        } ]
-    } ],
-    games: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Game' } ]
+    users:       { type: [ { 
+        user:  { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        stats: { type: [{
+            game:   { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
+            wins:   { type: Number },
+            losses: { type: Number }
+        }]}
+    }]},
+    games: { type: [{ 
+        game: { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
+    }]}
 });
 
-groupSchema.methods.addUser = function(userId) {
+groupSchema.methods.findUserIndex = function(userId) {
+    var index = -1;
+    for (var i = 0; i < this.users.length; i++) {
+        if (this.users[i].user == userId) {
+            index = i;
+        }
+    }
+    return index;
+}
+
+groupSchema.methods.addUser = function(userId, username) {
     if (this.users.indexOf(userId) === -1) {
         if (mongoose.Types.ObjectId.isValid(userId)) {
             var stats = []
@@ -34,29 +46,41 @@ groupSchema.methods.addUser = function(userId) {
 }
 
 groupSchema.methods.deleteUser = function(userId) {
-    var index = -1;
-    for (var i=0; i< this.users.length; i++) {
-        if (this.users[i].user == userId) {
-            index = i;
-        }
-    }
+    var index = this.findUserIndex(userId);
     if (index >= 0) {
         this.users.splice(index, 1);
     }
     return this.save();
 }
 
-groupSchema.methods.addGame = function(gameId) {
+groupSchema.methods.findGameIndex = function(gameId) {
+    var index = -1;
+    for (var i = 0; i < this.games.length; i++) {
+        if (this.games[i].game == gameId) {
+            index = i;
+        }
+    }
+    return index;
+}
+
+groupSchema.methods.addGame = function(gameId, name) {
     if (this.games.indexOf(gameId) === -1) {
         if (mongoose.Types.ObjectId.isValid(gameId)) {
-            this.games.push(gameId);
+            this.games.push({game: gameId});
+            for (var i = 0; i < this.users.length; i++) {
+                this.users[i].stats.push({
+                    game: gameId,
+                    wins: 0,
+                    losses: 0
+                });
+            }
         }
     }   
     return this.save();
 }
 
 groupSchema.methods.deleteGame = function(gameId) {
-    var index = this.games.indexOf(gameId);
+    var index = this.findGameIndex(gameId);
     if (index >= 0) {
         this.games.splice(index, 1); 
     }   
