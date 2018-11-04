@@ -17,11 +17,12 @@ let groupSchema = new mongoose.Schema({
     games: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Game' } ]
 });
 
-groupSchema.methods.findUserIndex = function(userId) {
+groupSchema.methods.findUserIndex = function(userIdent) {
     var index = -1;
     for (var i = 0; i < this.users.length; i++) {
-        if (this.users[i].id.toString() == userId) {
+        if (this.users[i].id.toString() == userIdent || this.users[i].name == userIdent) {
             index = i;
+            break;
         }
     }
     return index;
@@ -44,12 +45,15 @@ groupSchema.methods.addUser = function(userId, userName) {
     return this.save();
 }
 
-groupSchema.methods.deleteUser = function(userId) {
-    var index = this.findUserIndex(userId);
+groupSchema.methods.deleteUser = function(userIdent) {
+    var userDeleted = false;
+    var index = this.findUserIndex(userIdent);
     if (index >= 0) {
+        userDeleted = true;
         this.users.splice(index, 1);
     }
-    return this.save();
+    this.save();
+    return userDeleted;
 }
 
 groupSchema.methods.findGameIndex = function(gameId) {

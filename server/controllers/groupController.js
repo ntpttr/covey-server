@@ -131,9 +131,13 @@ function deleteUser(ident, userIdent, callback) {
         group = groupRes.groups[0];
         userController.getUser(userIdent, function(userRes) {
             if (!userRes.status) {
-                // TODO: Delete user from group even if it's not found to make it possible to remove dead users.
-                callback({'status': false, 'message': userRes.message});
-                return;
+                if (group.deleteUser(userIdent)) {
+                    callback({'status': true, 'message': 'User not found in database and successfully removed from group.'});
+                    return;
+                } else {
+                    callback({'status': false, 'message': userRes.message});
+                    return;
+                }
             }
             user = userRes.user;
             try {
