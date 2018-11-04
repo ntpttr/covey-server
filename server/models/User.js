@@ -55,4 +55,8 @@ userSchema.methods.deleteGroup = function(groupId) {
     return this.save();
 }
 
+userSchema.methods.getGroups = function() {
+    return this.groups;
+}
+
 module.exports = mongoose.model('User', userSchema);

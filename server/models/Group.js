@@ -6,30 +6,29 @@ let groupSchema = new mongoose.Schema({
     name:        { type: String, required: true },
     description: { type: String },
     users:       { type: [ { 
-        user:  { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        id:  { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        name: { type: String },
         stats: { type: [{
             game:   { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
             wins:   { type: Number },
             losses: { type: Number }
         }]}
     }]},
-    games: { type: [{ 
-        game: { type: mongoose.Schema.Types.ObjectId, ref: 'Game' },
-    }]}
+    games: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Game' } ]
 });
 
 groupSchema.methods.findUserIndex = function(userId) {
     var index = -1;
     for (var i = 0; i < this.users.length; i++) {
-        if (this.users[i].user == userId) {
+        if (this.users[i].id.toString() == userId) {
             index = i;
         }
     }
     return index;
 }
 
-groupSchema.methods.addUser = function(userId, username) {
-    if (this.users.indexOf(userId) === -1) {
+groupSchema.methods.addUser = function(userId, userName) {
+    if (this.findUserIndex(userId) == -1) {
         if (mongoose.Types.ObjectId.isValid(userId)) {
             var stats = []
             for (var i = 0; i < this.games.length; i++) {
@@ -39,7 +38,7 @@ groupSchema.methods.addUser = function(userId, username) {
                     losses: 0
                 })
             }
-            this.users.push({user: userId, stats: stats});
+            this.users.push({id: userId, name: userName, stats: stats});
         }
     }
     return this.save();

@@ -19,7 +19,7 @@ function authenticate(creds, callback) {
     }); 
 };
 
-function getUsers(callback) {
+function listUsers(callback) {
     User.find({}, function(err, users) {
         if (err) {
             callback({'status': false,
@@ -94,7 +94,7 @@ function createUser(properties, callback) {
 function updateUser(ident, properties, callback) {
     getUser(ident, function(userRes) {
         if (!userRes.status) {
-            callback({'status': false, 'message': userRes.message});
+            callback(userRes);
             return;
         }
         user = userRes.user;
@@ -109,6 +109,24 @@ function updateUser(ident, properties, callback) {
 }
 
 function deleteUser(ident, callback) {
+    // First delete this user from all groups.
+    getUser(ident, function(userRes) {
+        if (!userRes.status) {
+            callback(userRes);
+            return;
+        }
+        user = userRes.user;
+        user.getGroups().forEach(function(groupId) {
+            var groupController = require('./groupController');
+            groupController.getGroup(groupId, function(groupRes) {
+                if (!groupRes.status) {
+                    return;
+                }
+                group = groupRes.group;
+                group.deleteUser(user._id);
+            });
+        });
+    });
     deleteUserById(ident, function(res) {
         if (res.status) {
             callback(res);
@@ -151,7 +169,7 @@ function deleteUserByName(name, callback) {
 
 module.exports = {
     authenticate,
-    getUsers,
+    listUsers,
     getUser,
     createUser,
     updateUser,

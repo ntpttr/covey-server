@@ -1,6 +1,6 @@
 const Group = require('../models/Group');
-const gameController = require('./games')
-const userController = require('./users');
+const gameController = require('./gameController')
+const userController = require('./userController');
 
 function getGroups(callback) {
     Group.find({}, function(err, groups) {
@@ -131,6 +131,7 @@ function deleteUser(ident, userIdent, callback) {
         group = groupRes.groups[0];
         userController.getUser(userIdent, function(userRes) {
             if (!userRes.status) {
+                // TODO: Delete user from group even if it's not found to make it possible to remove dead users.
                 callback({'status': false, 'message': userRes.message});
                 return;
             }

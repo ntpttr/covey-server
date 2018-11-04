@@ -11,9 +11,9 @@ const mongoose = require('mongoose');
 const dev = process.env.NODE_ENV !== 'production';
 const url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
-const users = require('./server/routes/users');
-const groups = require('./server/routes/groups');
-const games = require('./server/routes/games')
+const users = require('./server/routes/userRoutes');
+const groups = require('./server/routes/groupRoutes');
+const games = require('./server/routes/gameRoutes')
 
 mongoose.connect(url, function(err) {
     if (err) throw err;

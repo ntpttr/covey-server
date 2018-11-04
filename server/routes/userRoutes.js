@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const userController = require('../controllers/users');
+const userController = require('../controllers/userController');
 
 // List all users
 router.get('/', function(req, res) {
-    userController.getUsers(function(getRes) {
+    userController.listUsers(function(getRes) {
         res.json(getRes);
     });
 });

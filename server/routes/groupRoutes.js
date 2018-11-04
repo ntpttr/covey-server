@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const groupController = require('../controllers/groups');
+const groupController = require('../controllers/groupController');
 
 // List all groups
 router.get('/', function(req, res) {
@@ -10,7 +10,7 @@ router.get('/', function(req, res) {
     });
 });
 
-// Get group by id
+// Get specific group
 router.get('/:ident', function(req, res) {
     var groupIdent = req.params.ident;
     groupController.getGroup(groupIdent, function(getRes) {
@@ -44,9 +44,9 @@ router.delete('/:ident', function(req, res) {
 });
 
 // Add user to group
-router.post('/:groupIdent/users/:userIdent', function (req, res) {
+router.post('/:groupIdent/users', function (req, res) {
     var groupIdent = req.params.groupIdent;
-    var userIdent = req.params.userIdent;
+    var userIdent = req.body.user;
     groupController.addUser(groupIdent, userIdent, function(addRes) {
         res.json(addRes);
     });
@@ -62,9 +62,9 @@ router.delete('/:groupIdent/users/:userIdent', function(req, res) {
 });
 
 // Add game to group
-router.post('/:groupIdent/games/:gameIdent', function (req, res, next) {
+router.post('/:groupIdent/games', function (req, res, next) {
     var groupIdent = req.params.groupIdent;
-    var gameIdent = req.params.gameIdent;
+    var gameIdent = req.body.game;
     groupController.addGame(groupIdent, gameIdent, function(addRes) {
         res.json(addRes);
     });
@@ -76,6 +76,16 @@ router.delete('/:groupIdent/games/:gameIdent', function(req, res) {
     var gameIdent = req.params.gameIdent;
     groupController.deleteGame(groupIdent, gameIdent, function(deleteRes) {
         res.json(deleteRes);
+    });
+});
+
+// Update stats in a group
+router.post('/:groupIdent/stats', function(req, res) {
+    var winners = req.body.winners;
+    var players = req.body.players;
+    var game = req.body.game;
+    groupController.updateStats(winners, players, game, function(updateRes) {
+        res.json(updateRes);
     });
 });
 
