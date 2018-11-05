@@ -13,34 +13,34 @@ const url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
 const users = require('./server/routes/userRoutes');
 const groups = require('./server/routes/groupRoutes');
-const games = require('./server/routes/gameRoutes')
+const games = require('./server/routes/gameRoutes');
 
 mongoose.connect(url, function(err) {
-    if (err) throw err;
+  if (err) throw err;
 });
 
 const app = next({dir: './client', dev});
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-    const server = express();
+  const server = express();
 
-    // parse application/json
-    server.use(bodyParser.json());
-    // parse application/x-www-form-urlencoded
-    server.use(bodyParser.urlencoded({extended: true}));
+  // parse application/json
+  server.use(bodyParser.json());
+  // parse application/x-www-form-urlencoded
+  server.use(bodyParser.urlencoded({extended: true}));
 
-    // Server-side API
-    server.use('/groups', groups);
-    server.use('/users', users);
-    server.use('/games', games);
+  // Server-side API
+  server.use('/groups', groups);
+  server.use('/users', users);
+  server.use('/games', games);
 
-    server.get('*', (req, res) => {
-        return handle(req, res);
-    });
+  server.get('*', (req, res) => {
+    return handle(req, res);
+  });
 
-    server.listen(port, err => {
-        if (err) throw err;
-        console.log("Server listening on port " + port + "...");
-    });
+  server.listen(port, (err) => {
+    if (err) throw err;
+    console.log('Server listening on port ' + port + '...');
+  });
 });
