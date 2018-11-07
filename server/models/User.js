@@ -1,5 +1,4 @@
 /* eslint no-invalid-this: 0 */
-
 // server/models/User.js
 
 const mongoose = require('mongoose');
@@ -14,7 +13,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', function(next) {
   // only hash the password if it has been modified (or is new)
-  if (!dfdoc.isModified('password')) return next();
+  if (!this.isModified('password')) return next();
 
   // generate a salt
   bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
