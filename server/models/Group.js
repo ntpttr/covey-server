@@ -57,6 +57,10 @@ groupSchema.methods.deleteUser = function(userIdent) {
   return userDeleted;
 };
 
+groupSchema.methods.getUsers = function() {
+  return this.users;
+};
+
 groupSchema.methods.findGameIndex = function(gameId) {
   let index = -1;
   for (let i = 0; i < this.games.length; i++) {

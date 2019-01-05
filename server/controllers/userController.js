@@ -164,18 +164,13 @@ function deleteUser(ident, callback) {
         if (!groupRes.status) {
           return;
         }
-        group = groupRes.group;
+        group = groupRes.groups[0];
         group.deleteUser(user._id);
       });
     });
-  });
-  deleteUserById(ident, function(res) {
-    if (res.status) {
+    deleteUserById(user._id, function(res) {
       callback(res);
-    } else {
-      // If user not found by ID, try name.
-      deleteUserByName(ident, callback);
-    }
+    });
   });
 }
 
@@ -199,30 +194,6 @@ function deleteUserById(id, callback) {
     }
   });
 }
-
-/**
- * Delete a user by its name.
- * @param {string} name - The user name.
- * @param {function} callback - The callback function.
- */
-function deleteUserByName(name, callback) {
-  User.findOneAndRemove({name: name}, function(err, user) {
-    if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error deleting user ' + name + '!'});
-    } else if (user) {
-      callback({
-        'status': true,
-        'message': 'User ' + name + ' deleted successfully.'});
-    } else {
-      callback({
-        'status': false,
-        'message': 'User ' + name + ' not found.'});
-    }
-  });
-}
-
 
 module.exports = {
   authenticate,

@@ -285,13 +285,34 @@ function deleteGame(ident, gameIdent, callback) {
  * @param {function} callback - The callback function.
  */
 function deleteGroup(ident, callback) {
-  deleteGroupById(ident, function(res) {
-    if (res.status) {
-      callback(res);
-    } else {
-      // If group not found by ID, try name.
-      deleteGroupByName(ident, callback);
+  // First delete this group from all user lists.
+  getGroup(ident, function(groupRes) {
+    if (!groupRes.status) {
+      callback(groupRes);
+      return;
     }
+    if (groupRes.groups.length > 1) {
+      callback({
+        'status': false,
+        'message': 'Multiple groups found with name ' + name +
+        '. Must delete by ID.'});
+      return;
+    }
+    group = groupRes.groups[0];
+    group.getUsers().forEach(function(user) {
+      const userController = require('./userController');
+      userController.getUser(user.id, function(userRes) {
+        if (!userRes.status) {
+          return;
+        }
+        user = userRes.user;
+        user.deleteGroup(group._id);
+      });
+    });
+    // Delete the group
+    deleteGroupById(group._id, function(res) {
+      callback(res);
+    });
   });
 }
 
@@ -312,40 +333,6 @@ function deleteGroupById(id, callback) {
       callback({
         'status': false,
         'message': 'group with ID ' + id + ' not found!'});
-    }
-  });
-}
-
-/**
- * Delete a group using its name.
- * @param {string} name - The group name.
- * @param {function} callback - The callback function.
- */
-function deleteGroupByName(name, callback) {
-  Group.find({name: name}, function(err, groups) {
-    if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error deleting group ' + name + '!'});
-    } else if (groups.length == 0) {
-      callback({
-        'status': false,
-        'message': 'Group with the name ' + name + ' not found!'});
-    } else if (groups.length > 1) {
-      callback({
-        'status': false,
-        'message': 'Multiple groups found with name ' +
-                   name + '. Must delete by ID.'});
-    } else {
-      group = groups[0];
-      try {
-        group.remove();
-        callback({'status': true});
-      } catch (err) {
-        callback({
-          'status': false,
-          'message': 'Error deleting group ' + name + '!'});
-      }
     }
   });
 }
