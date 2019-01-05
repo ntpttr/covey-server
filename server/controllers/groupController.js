@@ -136,7 +136,7 @@ function addUser(ident, userIdent, callback) {
       callback({
         'status': false,
         'message': 'More than one group found with name ' +
-                   groupIdent + '. Use ID.'});
+                  groupIdent + '. Use ID.'});
       return;
     }
     group = groupRes.groups[0];
