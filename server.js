@@ -15,7 +15,7 @@ const users = require('./server/routes/userRoutes');
 const groups = require('./server/routes/groupRoutes');
 const games = require('./server/routes/gameRoutes');
 
-mongoose.connect(url, function(err) {
+mongoose.connect(url, {useNewUrlParser: true}, function(err) {
   if (err) throw err;
 });
 
