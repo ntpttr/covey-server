@@ -48,7 +48,7 @@ describe('group', function() {
         expected = [];
         group.deleteUser(user._id);
         expect(group.users).to.eql(expected);
-        done()
+        done();
     });
 
     it('should add games to its game list', function (done) {
@@ -56,21 +56,23 @@ describe('group', function() {
         var group = new Group({
             'name': 'testgroup'
         });
-        expected = [game._id]
+        expected = game._id
         group.addGame(game._id);
-        expect(group.games).to.eql(expected);
+        expect(group.games[0].game).to.eql(expected);
         done();
     });
 
-    it('should delete games from its game list', async function (done) {
+    it('should delete games from its game list', function (done) {
         var game = new Game(testGame);
         var group = new Group({
             'name': 'testgroup',
-            'games': [game._id]
+            'games': [{
+                'game': game._id
+            }]
         });
         expected = [];
         group.deleteGame(game._id);
         expect(group.games).to.eql(expected);
-        done()
+        done();
     });
 });
