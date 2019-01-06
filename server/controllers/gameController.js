@@ -1,4 +1,4 @@
-const Game = require('../models/Game');
+// server/controllers/gameController.js
 
 const bggOptions = {
   timeout: 10000, // timeout of 10s (5s is the default)
