@@ -1,14 +1,15 @@
-const User = require('../models/User');
+// server/controllers/userController.js
 
 /**
  * Authenticate a user based on credentials.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {object} creds - The credentials to check.
  * @param {function} callback - The callback function.
  */
-function authenticate(creds, callback) {
+function authenticate(userSchema, creds, callback) {
   const name = creds.name;
   const password = creds.password;
-  User.findOne({name: name}, function(err, user) {
+  userSchema.findOne({name: name}, function(err, user) {
     if (err) { // err indicates error, not no result found
       callback({'err': err});
       return;
@@ -26,10 +27,11 @@ function authenticate(creds, callback) {
 
 /**
  * List users in the database.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {function} callback - The callback function.
  */
-function listUsers(callback) {
-  User.find({}, function(err, users) {
+function listUsers(userSchema, callback) {
+  userSchema.find({}, function(err, users) {
     if (err) {
       callback({
         'status': false,
@@ -42,27 +44,29 @@ function listUsers(callback) {
 
 /**
  * Get a specific user.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function getUser(ident, callback) {
-  getUserById(ident, function(res) {
+function getUser(userSchema, ident, callback) {
+  getUserById(userSchema, ident, function(res) {
     if (res.status) {
       callback(res);
     } else {
       // If user not found by ID, try name.
-      getUserByName(ident, callback);
+      getUserByName(userSchema, ident, callback);
     }
   });
 }
 
 /**
  * Get a user based on its ID.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {string} id - The user ID.
  * @param {function} callback - The callback function.
  */
-function getUserById(id, callback) {
-  User.findById(id, function(err, user) {
+function getUserById(userSchema, id, callback) {
+  userSchema.findById(id, function(err, user) {
     if (err) {
       callback({
         'status': false,
@@ -79,11 +83,12 @@ function getUserById(id, callback) {
 
 /**
  * Get a user based on its name.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {string} name - The user name.
  * @param {function} callback - The callback function.
  */
-function getUserByName(name, callback) {
-  User.findOne({name: name}, function(err, user) {
+function getUserByName(userSchema, name, callback) {
+  userSchema.findOne({name: name}, function(err, user) {
     if (err) {
       callback({
         'status': false,
@@ -100,11 +105,12 @@ function getUserByName(name, callback) {
 
 /**
  * Create a new user.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {object} properties - The user properties.
  * @param {function} callback - The callback function.
  */
-function createUser(properties, callback) {
-  user = new User(properties);
+function createUser(userSchema, properties, callback) {
+  user = new userSchema(properties);
 
   user.save(function(err) {
     if (err) {
@@ -124,12 +130,13 @@ function createUser(properties, callback) {
 
 /**
  * Update an existing user.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(ident, properties, callback) {
-  getUser(ident, function(userRes) {
+function updateUser(userSchema, ident, properties, callback) {
+  getUser(userSchema, ident, function(userRes) {
     if (!userRes.status) {
       callback(userRes);
       return;
@@ -147,12 +154,13 @@ function updateUser(ident, properties, callback) {
 
 /**
  * Delete a user.
+ * @param {schema} userSchema - The user mongoose schema.s
  * @param {string} ident - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteUser(ident, callback) {
+function deleteUser(userSchema, ident, callback) {
   // First delete this user from all groups.
-  getUser(ident, function(userRes) {
+  getUser(userSchema, ident, function(userRes) {
     if (!userRes.status) {
       callback(userRes);
       return;
@@ -168,7 +176,7 @@ function deleteUser(ident, callback) {
         group.deleteUser(user._id);
       });
     });
-    deleteUserById(user._id, function(res) {
+    deleteUserById(userSchema, user._id, function(res) {
       callback(res);
     });
   });
@@ -176,11 +184,12 @@ function deleteUser(ident, callback) {
 
 /**
  * Delete a user by its ID.
+ * @param {schema} userSchema - The user mongoose schema.
  * @param {string} id - The user ID.
  * @param {function} callback - The callback function.
  */
-function deleteUserById(id, callback) {
-  User.findByIdAndRemove(id, function(err, user) {
+function deleteUserById(userSchema, id, callback) {
+  userSchema.findByIdAndRemove(id, function(err, user) {
     if (err) {
       callback({
         'status': false,
