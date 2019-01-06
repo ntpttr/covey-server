@@ -30,7 +30,7 @@ describe('group', function() {
       'name': 'testgroup',
     });
     expected = user._id;
-    group.addUser(user._id);
+    group.addUser(user._id, user.name);
     expect(group.users[0].user).to.eql(expected);
     done();
   });
@@ -41,6 +41,7 @@ describe('group', function() {
       'name': 'testgroup',
       'users': [{
         'user': user._id,
+        'name': user.name,
         'stats': [],
       }],
     });
@@ -57,7 +58,7 @@ describe('group', function() {
     });
     expected = game._id;
     group.addGame(game._id);
-    expect(group.games[0].game).to.eql(expected);
+    expect(group.games[0]).to.eql(expected);
     done();
   });
 
@@ -65,9 +66,7 @@ describe('group', function() {
     const game = new Game(testGame);
     const group = new Group({
       'name': 'testgroup',
-      'games': [{
-        'game': game._id,
-      }],
+      'games': [game._id],
     });
     expected = [];
     group.deleteGame(game._id);
