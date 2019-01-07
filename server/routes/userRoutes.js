@@ -42,9 +42,13 @@ router.put('/:ident', function(req, res) {
   const userIdent = req.params.ident;
   const properties = req.body;
 
-  userController.updateUser(userSchema, userIdent, properties, function(updateRes) {
-    res.json(updateRes);
-  });
+  userController.updateUser(
+      userSchema,
+      userIdent,
+      properties,
+      function(updateRes) {
+        res.json(updateRes);
+      });
 });
 
 // Login
@@ -62,11 +66,18 @@ router.post('/login', function(req, res) {
 router.delete('/:ident', function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
+  const groupController = req.groupController;
+  const groupSchema = req.groupSchema;
   const userIdent = req.params.ident;
-  
-  userController.deleteUser(userSchema, userIdent, function(deleteRes) {
-    res.json(deleteRes);
-  });
+
+  userController.deleteUser(
+      userSchema,
+      groupSchema,
+      groupController,
+      userIdent,
+      function(deleteRes) {
+        res.json(deleteRes);
+      });
 });
 
 module.exports = router;

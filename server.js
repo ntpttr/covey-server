@@ -44,7 +44,7 @@ app.prepare().then(() => {
   server.use(bodyParser.urlencoded({extended: true}));
 
   // Server-side API
-  server.use('/groups', function (req, res, next) {
+  server.use('/groups', function(req, res, next) {
     req.groupSchema = groupSchema;
     req.groupController = groupController;
     req.userSchema = userSchema;
@@ -54,13 +54,15 @@ app.prepare().then(() => {
     next();
   }, groupRoutes);
 
-  server.use('/users', function (req, res, next) {
+  server.use('/users', function(req, res, next) {
     req.userSchema = userSchema;
     req.userController = userController;
+    req.groupSchema = groupSchema;
+    req.groupController = groupController;
     next();
   }, userRoutes);
 
-  server.use('/games', function (req, res, next) {
+  server.use('/games', function(req, res, next) {
     req.gameSchema = gameSchema;
     req.gameController = gameController;
     next();

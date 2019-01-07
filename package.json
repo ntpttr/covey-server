@@ -32,6 +32,7 @@
     "next": "^6.1.1",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
+    "sinon": "^7.2.2",
     "styled-jsx": "^2.2.7"
   },
   "devDependencies": {

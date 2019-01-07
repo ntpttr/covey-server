@@ -154,11 +154,13 @@ function updateUser(userSchema, ident, properties, callback) {
 
 /**
  * Delete a user.
- * @param {schema} userSchema - The user mongoose schema.s
+ * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {controller} groupController - The group conroller object.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteUser(userSchema, ident, callback) {
+function deleteUser(userSchema, groupSchema, groupController, ident, callback) {
   // First delete this user from all groups.
   getUser(userSchema, ident, function(userRes) {
     if (!userRes.status) {
@@ -167,8 +169,7 @@ function deleteUser(userSchema, ident, callback) {
     }
     user = userRes.user;
     user.getGroups().forEach(function(groupId) {
-      const groupController = require('./groupController');
-      groupController.getGroup(groupId, function(groupRes) {
+      groupController.getGroup(groupSchema, groupId, function(groupRes) {
         if (!groupRes.status) {
           return;
         }
