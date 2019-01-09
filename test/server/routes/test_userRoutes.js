@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
-describe('userRoutes', function() {
+describe('User Routes', function() {
   const userController = require('../../../server/controllers/userController');
   mockRequire('../../../server/controllers/userController', userController);
   const app = require('../../../app');

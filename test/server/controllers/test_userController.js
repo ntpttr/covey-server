@@ -16,7 +16,7 @@ const testUser2 = {
   'password': 'Password123',
 };
 
-describe('userController', function() {
+describe('User Controller', function() {
   beforeEach(function() {
     sinon.stub(User, 'findOne');
     sinon.stub(User, 'find');

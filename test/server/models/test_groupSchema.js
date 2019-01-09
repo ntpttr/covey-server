@@ -16,7 +16,7 @@ const testGame = {
   'name': 'testgame',
 };
 
-describe('group', function() {
+describe('Group Schema', function() {
   it('should be invalid if name is empty', function() {
     const group = new Group({});
     group.validate(function(err) {

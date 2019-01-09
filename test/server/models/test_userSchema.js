@@ -8,7 +8,7 @@ const testGroup = {
   'name': 'testgroup',
 };
 
-describe('user', function() {
+describe('User Schema', function() {
   it('should be invalid if name is empty', function() {
     const user = new User({
       'password': 'pass',

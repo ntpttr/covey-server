@@ -2,7 +2,7 @@ const expect = require('chai').expect;
 
 const Game = require('../../../server/models/Game');
 
-describe('game', function() {
+describe('Game Schema', function() {
   it('should be invalid if name is empty', function() {
     const game = new Game({});
     game.validate(function(err) {
