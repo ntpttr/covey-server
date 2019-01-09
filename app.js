@@ -12,7 +12,8 @@ const mongoose = require('mongoose');
 const dev = process.env.NODE_ENV !== 'production';
 const url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
-const testing = module.parent != null;
+const testing = module.parent == null ?
+    false : module.parent.filename.indexOf('test') != -1;
 
 // Define route variables
 const userRoutes = require('./server/routes/userRoutes');
