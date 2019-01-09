@@ -15,7 +15,7 @@ const bgg = require('bgg')(bggOptions);
 
 /**
  * Gets list of games from the database.
- * @param {schema} gameSchea - The game mongoose schema.
+ * @param {schema} gameSchema - The game mongoose schema.
  * @param {function} callback - The callback function.
  */
 function getGamesDb(gameSchema, callback) {
