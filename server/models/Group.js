@@ -6,7 +6,7 @@ const groupSchema = new mongoose.Schema({
   name: {type: String, required: true},
   description: {type: String},
   users: {type: [{
-    id: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     name: {type: String},
     stats: {type: [{
       game: {type: mongoose.Schema.Types.ObjectId, ref: 'Game'},
@@ -20,7 +20,7 @@ const groupSchema = new mongoose.Schema({
 groupSchema.methods.findUserIndex = function(userIdent) {
   let index = -1;
   for (let i = 0; i < this.users.length; i++) {
-    if (this.users[i].id.toString() == userIdent ||
+    if (this.users[i].user.toString() == userIdent ||
         this.users[i].name == userIdent) {
       index = i;
       break;
@@ -40,7 +40,7 @@ groupSchema.methods.addUser = function(userId, userName) {
           losses: 0,
         });
       }
-      this.users.push({id: userId, name: userName, stats: stats});
+      this.users.push({user: userId, name: userName, stats: stats});
     }
   }
   return this.save();
@@ -64,7 +64,7 @@ groupSchema.methods.getUsers = function() {
 groupSchema.methods.findGameIndex = function(gameId) {
   let index = -1;
   for (let i = 0; i < this.games.length; i++) {
-    if (this.games[i].game == gameId) {
+    if (this.games[i] == gameId) {
       index = i;
     }
   }
@@ -74,7 +74,7 @@ groupSchema.methods.findGameIndex = function(gameId) {
 groupSchema.methods.addGame = function(gameId, name) {
   if (this.games.indexOf(gameId) === -1) {
     if (mongoose.Types.ObjectId.isValid(gameId)) {
-      this.games.push({game: gameId});
+      this.games.push(gameId);
       for (let i = 0; i < this.users.length; i++) {
         this.users[i].stats.push({
           game: gameId,

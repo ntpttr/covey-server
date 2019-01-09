@@ -1,13 +1,12 @@
-const Group = require('../models/Group');
-const gameController = require('./gameController');
-const userController = require('./userController');
+// server/controllers/groupController.js
 
 /**
  * List all groups.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {function} callback - The callback function.
  */
-function listGroups(callback) {
-  Group.find({}, function(err, groups) {
+function listGroups(groupSchema, callback) {
+  groupSchema.find({}, function(err, groups) {
     if (err) {
       callback({'status': false, 'message': 'Database error finding groups!'});
     } else {
@@ -18,27 +17,29 @@ function listGroups(callback) {
 
 /**
  * Get a specific group from the database.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} ident - Identifier for the group, either ID or name.
  * @param {function} callback - The callback function.
  */
-function getGroup(ident, callback) {
-  getGroupById(ident, function(res) {
+function getGroup(groupSchema, ident, callback) {
+  getGroupById(groupSchema, ident, function(res) {
     if (res.status) {
       callback(res);
     } else {
       // If user not found by ID, try name.
-      getGroupsByName(ident, callback);
+      getGroupsByName(groupSchema, ident, callback);
     }
   });
 }
 
 /**
  * Get a group from the database by ID.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} id - The group ID.
  * @param {function} callback - The callback function.
  */
-function getGroupById(id, callback) {
-  Group.findById(id, function(err, group) {
+function getGroupById(groupSchema, id, callback) {
+  groupSchema.findById(id, function(err, group) {
     if (err) {
       callback({
         'status': false,
@@ -55,11 +56,12 @@ function getGroupById(id, callback) {
 
 /**
  * Get groups with a specific name from the database.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} name - The group name.
  * @param {function} callback - The callback function.
  */
-function getGroupsByName(name, callback) {
-  Group.find({name: name}, function(err, groups) {
+function getGroupsByName(groupSchema, name, callback) {
+  groupSchema.find({name: name}, function(err, groups) {
     if (err) {
       callback({
         'status': false,
@@ -76,11 +78,12 @@ function getGroupsByName(name, callback) {
 
 /**
  * Create a new group.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {object} properties - The group properties
  * @param {function} callback - The callback function.
  */
-function createGroup(properties, callback) {
-  group = new Group(properties);
+function createGroup(groupSchema, properties, callback) {
+  group = new groupSchema(properties);
 
   group.save(function(err) {
     if (err) {
@@ -94,12 +97,13 @@ function createGroup(properties, callback) {
 
 /**
  * Update an existing group.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} ident - The group identifier, either name or ID.
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function updateGroup(ident, properties, callback) {
-  getGroup(ident, function(groupRes) {
+function updateGroup(groupSchema, ident, properties, callback) {
+  getGroup(groupSchema, ident, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
@@ -123,12 +127,15 @@ function updateGroup(ident, properties, callback) {
 
 /**
  * Add a user to a group.
- * @param {string} ident - The group identifier, either name or ID.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {schema} userSchema - The user mongoose schema.
+ * @param {controller} userController - the user controller object.
+ * @param {string} groupIdent - The group identifier, either name or ID.
  * @param {string} userIdent - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function addUser(ident, userIdent, callback) {
-  getGroup(ident, function(groupRes) {
+function addUser(groupSchema, userSchema, userController, groupIdent, userIdent, callback) {
+  getGroup(groupSchema, groupIdent, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
@@ -140,7 +147,7 @@ function addUser(ident, userIdent, callback) {
       return;
     }
     group = groupRes.groups[0];
-    userController.getUser(userIdent, function(userRes) {
+    userController.getUser(userSchema, userIdent, function(userRes) {
       if (!userRes.status) {
         callback({'status': false, 'message': userRes.message});
         return;
@@ -161,12 +168,15 @@ function addUser(ident, userIdent, callback) {
 
 /**
  * Remove a user from a group.
- * @param {string} ident - The group identifier, either name or ID.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {schema} userSchema - The user mongoose schema.
+ * @param {controller} userController - The user controller object.
+ * @param {string} groupIdent - The group identifier, either name or ID.
  * @param {string} userIdent - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteUser(ident, userIdent, callback) {
-  getGroup(ident, function(groupRes) {
+function deleteUser(groupSchema, userSchema, userController, groupIdent, userIdent, callback) {
+  getGroup(groupSchema, groupIdent, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
@@ -178,7 +188,7 @@ function deleteUser(ident, userIdent, callback) {
       return;
     }
     group = groupRes.groups[0];
-    userController.getUser(userIdent, function(userRes) {
+    userController.getUser(userSchema, userIdent, function(userRes) {
       if (!userRes.status) {
         if (group.deleteUser(userIdent)) {
           callback({
@@ -207,12 +217,15 @@ function deleteUser(ident, userIdent, callback) {
 
 /**
  * Add a game to the group.
- * @param {string} ident - The identifier for the group, either name or ID.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {schema} gameSchema - The game mongoose schema.
+ * @param {controller} gameController - The game controller object.
+ * @param {string} groupIdent - The identifier for the group, either name or ID.
  * @param {string} gameIdent - The identifier for the game, either name or ID.
  * @param {function} callback - The callback function.
  */
-function addGame(ident, gameIdent, callback) {
-  getGroup(ident, function(groupRes) {
+function addGame(groupSchema, gameSchema, gameController, groupIdent, gameIdent, callback) {
+  getGroup(groupSchema, groupIdent, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
@@ -224,7 +237,7 @@ function addGame(ident, gameIdent, callback) {
       return;
     }
     group = groupRes.groups[0];
-    gameController.getGameDb(gameIdent, function(gameRes) {
+    gameController.getGameDb(gameSchema, gameIdent, function(gameRes) {
       if (!gameRes.status) {
         callback({'status': false, 'message': gameRes.message});
         return;
@@ -244,12 +257,15 @@ function addGame(ident, gameIdent, callback) {
 
 /**
  * Remove a game from a group.
- * @param {string} ident - The identifier for the group, either name or ID.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {schema} gameSchema - The game mongoose schema.
+ * @param {controller} gameController - The game controller object.
+ * @param {string} groupIdent - The identifier for the group, either name or ID.
  * @param {string} gameIdent - The identifier for the game, either name or ID.
  * @param {function} callback - The callback funtion.
  */
-function deleteGame(ident, gameIdent, callback) {
-  getGroup(ident, function(groupRes) {
+function deleteGame(groupSchema, gameSchema, gameController, groupIdent, gameIdent, callback) {
+  getGroup(groupSchema, groupIdent, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
@@ -261,7 +277,7 @@ function deleteGame(ident, gameIdent, callback) {
       return;
     }
     group = groupRes.groups[0];
-    gameController.getGameDb(gameIdent, function(gameRes) {
+    gameController.getGameDb(gameSchema, gameIdent, function(gameRes) {
       if (!gameRes.status) {
         callback({'status': false, 'message': gameRes.message});
         return;
@@ -281,12 +297,15 @@ function deleteGame(ident, gameIdent, callback) {
 
 /**
  * Delete a group.
+ * @param {schema} groupSchema - The group mongoose schema.
+ * @param {schema} userSchema - The user mongoose schema.
+ * @param {controller} userController - The user controller object.
  * @param {string} ident - The identifier for the group, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteGroup(ident, callback) {
+function deleteGroup(groupSchema, userSchema, userController, ident, callback) {
   // First delete this group from all user lists.
-  getGroup(ident, function(groupRes) {
+  getGroup(groupSchema, ident, function(groupRes) {
     if (!groupRes.status) {
       callback(groupRes);
       return;
@@ -294,14 +313,13 @@ function deleteGroup(ident, callback) {
     if (groupRes.groups.length > 1) {
       callback({
         'status': false,
-        'message': 'Multiple groups found with name ' + name +
+        'message': 'Multiple groups found with name ' + ident +
         '. Must delete by ID.'});
       return;
     }
     group = groupRes.groups[0];
     group.getUsers().forEach(function(user) {
-      const userController = require('./userController');
-      userController.getUser(user.id, function(userRes) {
+      userController.getUser(userSchema, user.id, function(userRes) {
         if (!userRes.status) {
           return;
         }
@@ -310,7 +328,7 @@ function deleteGroup(ident, callback) {
       });
     });
     // Delete the group
-    deleteGroupById(group._id, function(res) {
+    deleteGroupById(groupSchema, group._id, function(res) {
       callback(res);
     });
   });
@@ -318,11 +336,12 @@ function deleteGroup(ident, callback) {
 
 /**
  * Delete a group using its ID.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} id - The group ID.
  * @param {function} callback - The callback function.
  */
-function deleteGroupById(id, callback) {
-  Group.findByIdAndRemove(id, function(err, group) {
+function deleteGroupById(groupSchema, id, callback) {
+  groupSchema.findByIdAndRemove(id, function(err, group) {
     if (err) {
       callback({
         'status': false,
@@ -339,14 +358,15 @@ function deleteGroupById(id, callback) {
 
 /**
  * Update the win/loss stats of a game in a group.
+ * @param {schema} groupSchema - The group mongoose schema.
  * @param {string} groupIdent - The identifier for the group, either name or ID.
  * @param {string} gameIdent - The identifier for the game, either name or ID.
  * @param {array} winners - The list of winners of a game.
  * @param {array} players - The list of players of a game.
  * @param {function} callback - The callback function.
  */
-function updateStats(groupIdent, gameIdent, winners, players, callback) {
-  getGroup(groupIdent, function(groupRes) {
+function updateStats(groupSchema, groupIdent, gameIdent, winners, players, callback) {
+  getGroup(groupSchema, groupIdent, function(groupRes) {
     if (!groupRes.status) {
       callback({'status': false, 'message': groupRes.message});
       return;
