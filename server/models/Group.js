@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 
 const groupSchema = new mongoose.Schema({
-  name: {type: String, required: true},
+  name: {type: String, required: true, index: {unique: true}},
   description: {type: String},
   users: {type: [{
     user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
@@ -71,7 +71,7 @@ groupSchema.methods.findGameIndex = function(gameId) {
   return index;
 };
 
-groupSchema.methods.addGame = function(gameId, name) {
+groupSchema.methods.addGame = function(gameId) {
   if (this.games.indexOf(gameId) === -1) {
     if (mongoose.Types.ObjectId.isValid(gameId)) {
       this.games.push(gameId);

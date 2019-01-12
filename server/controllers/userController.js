@@ -2,151 +2,176 @@
 
 /**
  * Authenticate a user based on credentials.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {object} creds - The credentials to check.
  * @param {function} callback - The callback function.
  */
-function authenticate(userSchema, creds, callback) {
+function authenticate(User, creds, callback) {
   const name = creds.name;
   const password = creds.password;
-  userSchema.findOne({name: name}, function(err, user) {
+  User.findOne({name: name}, function(err, user) {
     if (err) { // err indicates error, not no result found
-      callback({'err': err});
+      callback(500, {
+        'message': err,
+      });
       return;
     }
 
     if (user) { // found the user!
       user.comparePassword(password, function(err, isMatch) {
-        callback({'status': isMatch, 'foundUser': true});
+        if (isMatch) {
+          callback(200, {});
+        } else {
+          callback(401, {
+            'message': 'Invalid username or password.',
+          });
+        }
       });
     } else {
-      callback({'status': false, 'foundUser': false});
+      callback(404, {
+        'message': 'User ' + name + ' not found',
+      });
     }
   });
 };
 
 /**
  * List users in the database.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {function} callback - The callback function.
  */
-function listUsers(userSchema, callback) {
-  userSchema.find({}, function(err, users) {
+function listUsers(User, callback) {
+  User.find({}, function(err, users) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding users!'});
+      callback(500, {
+        'message': err,
+      });
     } else {
-      callback({'status': true, 'users': users});
+      callback(200, {
+        'users': users,
+      });
     }
   });
 }
 
 /**
  * Get a specific user.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function getUser(userSchema, ident, callback) {
-  getUserById(userSchema, ident, function(res) {
-    if (res.status) {
-      callback(res);
+function getUser(User, ident, callback) {
+  getUserById(User, ident, function(status, body) {
+    if (status == 200) {
+      callback(status, body);
     } else {
       // If user not found by ID, try name.
-      getUserByName(userSchema, ident, callback);
+      getUserByName(User, ident, callback);
     }
   });
 }
 
 /**
  * Get a user based on its ID.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {string} id - The user ID.
  * @param {function} callback - The callback function.
  */
-function getUserById(userSchema, id, callback) {
-  userSchema.findById(id, function(err, user) {
+function getUserById(User, id, callback) {
+  User.findById(id, function(err, user) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding user with id ' + id + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (user) {
-      callback({'status': true, 'user': user});
+      callback(200, {
+        'user': user,
+      });
     } else {
-      callback({
-        'status': false,
-        'message': 'User with ID ' + id + ' not found!'});
+      callback(404, {
+        'message': 'User ' + id + ' not found.',
+      });
     }
   });
 }
 
 /**
  * Get a user based on its name.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {string} name - The user name.
  * @param {function} callback - The callback function.
  */
-function getUserByName(userSchema, name, callback) {
-  userSchema.findOne({name: name}, function(err, user) {
+function getUserByName(User, name, callback) {
+  User.findOne({name: name}, function(err, user) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding user with name ' + name + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (user) {
-      callback({'status': true, 'user': user});
+      callback(200, {
+        'user': user,
+      });
     } else {
-      callback({
-        'status': false,
-        'message': 'User with name ' + name + ' not found!'});
+      callback(404, {
+        'message': 'User ' + name + ' not found.',
+      });
     }
   });
 }
 
 /**
  * Create a new user.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {object} properties - The user properties.
  * @param {function} callback - The callback function.
  */
-function createUser(userSchema, properties, callback) {
-  user = new userSchema(properties);
+function createUser(User, properties, callback) {
+  user = new User(properties);
 
   user.save(function(err) {
     if (err) {
-      let errMessage = '';
       if (err.code === 11000) {
         // Duplicate username found
-        errMessage = 'Username already exists!';
+        callback(409, {
+          'message': 'User name ' + properties.name + ' already exists!',
+        });
+        return;
       } else {
-        errMessage = 'Error saving user!';
+        callback(500, {
+          'message': err,
+        });
+        return;
       }
-      callback({'status': false, 'message': errMessage});
-      return;
     }
-    callback({'status': true, 'user': user});
+    callback(201, {
+      'user': user,
+    });
   });
 }
 
 /**
  * Update an existing user.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(userSchema, ident, properties, callback) {
-  getUser(userSchema, ident, function(userRes) {
-    if (!userRes.status) {
-      callback(userRes);
+function updateUser(User, ident, properties, callback) {
+  getUser(User, ident, function(status, body) {
+    if (status != 200) {
+      callback(status, body);
       return;
     }
-    user = userRes.user;
+    user = body.user;
     Object.assign(user, properties).save((err, user) => {
       if (err) {
-        callback({'status': false, 'message': 'Error updating user!'});
+        callback(500, {
+          'message': err,
+        });
       } else {
-        callback({'status': true, 'user': user});
+        callback(200, {
+          'user': user,
+        });
       }
     });
   });
@@ -154,53 +179,56 @@ function updateUser(userSchema, ident, properties, callback) {
 
 /**
  * Delete a user.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {schema} groupSchema - The group mongoose schema.
  * @param {controller} groupController - The group conroller object.
  * @param {string} ident - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteUser(userSchema, groupSchema, groupController, ident, callback) {
+function deleteUser(User, groupSchema, groupController, ident, callback) {
   // First delete this user from all groups.
-  getUser(userSchema, ident, function(userRes) {
-    if (!userRes.status) {
-      callback(userRes);
+  getUser(User, ident, function(status, body) {
+    if (status != 200) {
+      callback(status, body);
       return;
     }
-    user = userRes.user;
+    user = body.user;
     user.getGroups().forEach(function(groupId) {
-      groupController.getGroup(groupSchema, groupId, function(groupRes) {
-        if (!groupRes.status) {
-          return;
-        }
-        group = groupRes.groups[0];
-        group.deleteUser(user._id);
-      });
+      groupController.getGroup(
+          groupSchema,
+          groupId,
+          function(groupStatus, groupBody) {
+            if (groupStatus != 200) {
+              return;
+            }
+            group = groupBody.group;
+            group.deleteUser(user._id);
+          });
     });
-    deleteUserById(userSchema, user._id, function(res) {
-      callback(res);
+    deleteUserById(User, user._id, function(status, body) {
+      callback(status, body);
     });
   });
 }
 
 /**
  * Delete a user by its ID.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {string} id - The user ID.
  * @param {function} callback - The callback function.
  */
-function deleteUserById(userSchema, id, callback) {
-  userSchema.findByIdAndRemove(id, function(err, user) {
+function deleteUserById(User, id, callback) {
+  User.findByIdAndRemove(id, function(err, user) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding user with id ' + id + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (user) {
-      callback({'status': true});
+      callback(200, {});
     } else {
-      callback({
-        'status': false,
-        'message': 'User with ID ' + id + ' not found!'});
+      callback(404, {
+        'message': 'User ' + id + ' not found.',
+      });
     }
   });
 }

@@ -8,8 +8,9 @@ router.get('/', function(req, res) {
   const gameSchema = req.gameSchema;
   const gameController = req.gameController;
 
-  gameController.getGamesDb(gameSchema, function(getRes) {
-    res.json(getRes);
+  gameController.listGamesDb(gameSchema, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -19,8 +20,9 @@ router.get('/:ident', function(req, res) {
   const gameController = req.gameController;
   const ident = req.params.ident;
 
-  gameController.getGameDb(gameSchema, ident, function(getRes) {
-    res.json(getRes);
+  gameController.getGameDb(gameSchema, ident, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -29,8 +31,9 @@ router.get('/bgg/:name', function(req, res) {
   const gameController = req.gameController;
   const name = req.params.name;
 
-  gameController.getGameBgg(name, function(getRes) {
-    res.json(getRes);
+  gameController.getGameBgg(name, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -40,8 +43,9 @@ router.post('/', function(req, res) {
   const gameController = req.gameController;
   const properties = req.body;
 
-  gameController.saveCustomGame(gameSchema, properties, function(saveRes) {
-    res.json(saveRes);
+  gameController.saveCustomGame(gameSchema, properties, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -51,8 +55,9 @@ router.post('/bgg', function(req, res) {
   const gameController = req.gameController;
   const name = req.body.name;
 
-  gameController.saveBggGame(gameSchema, name, function(saveRes) {
-    res.json(saveRes);
+  gameController.saveBggGame(gameSchema, name, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -62,8 +67,9 @@ router.delete('/:ident', function(req, res) {
   const gameController = req.gameController;
   const ident = req.params.ident;
 
-  gameController.deleteGame(gameSchema, ident, function(deleteRes) {
-    res.json(deleteRes);
+  gameController.deleteGame(gameSchema, ident, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 

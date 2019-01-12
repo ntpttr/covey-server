@@ -8,8 +8,9 @@ router.get('/', function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
 
-  userController.listUsers(userSchema, function(getRes) {
-    res.json(getRes);
+  userController.listUsers(userSchema, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -19,8 +20,9 @@ router.get('/:ident', function(req, res) {
   const userSchema = req.userSchema;
   const userIdent = req.params.ident;
 
-  userController.getUser(userSchema, userIdent, function(getRes) {
-    res.json(getRes);
+  userController.getUser(userSchema, userIdent, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -30,8 +32,9 @@ router.post('/', function(req, res) {
   const userSchema = req.userSchema;
   const properties = req.body;
 
-  userController.createUser(userSchema, properties, function(createRes) {
-    res.json(createRes);
+  userController.createUser(userSchema, properties, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -46,8 +49,9 @@ router.put('/:ident', function(req, res) {
       userSchema,
       userIdent,
       properties,
-      function(updateRes) {
-        res.json(updateRes);
+      function(status, body) {
+        res.status(status);
+        res.json(body);
       });
 });
 
@@ -57,8 +61,9 @@ router.post('/login', function(req, res) {
   const userSchema = req.userSchema;
   const creds = req.body;
 
-  userController.authenticate(userSchema, creds, function(auth) {
-    res.json(auth);
+  userController.authenticate(userSchema, creds, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -75,8 +80,9 @@ router.delete('/:ident', function(req, res) {
       groupSchema,
       groupController,
       userIdent,
-      function(deleteRes) {
-        res.json(deleteRes);
+      function(status, body) {
+        res.status(status);
+        res.json(body);
       });
 });
 

@@ -8,8 +8,9 @@ router.get('/', function(req, res) {
   const groupController = req.groupController;
   const groupSchema = req.groupSchema;
 
-  groupController.listGroups(groupSchema, function(getRes) {
-    res.json(getRes);
+  groupController.listGroups(groupSchema, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -19,8 +20,9 @@ router.get('/:ident', function(req, res) {
   const groupSchema = req.groupSchema;
   const groupIdent = req.params.ident;
 
-  groupController.getGroup(groupSchema, groupIdent, function(getRes) {
-    res.json(getRes);
+  groupController.getGroup(groupSchema, groupIdent, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -30,8 +32,9 @@ router.post('/', function(req, res) {
   const groupSchema = req.groupSchema;
   const properties = req.body;
 
-  groupController.createGroup(groupSchema, properties, function(createRes) {
-    res.json(createRes);
+  groupController.createGroup(groupSchema, properties, function(status, body) {
+    res.status(status);
+    res.json(body);
   });
 });
 
@@ -42,9 +45,14 @@ router.put('/:ident', function(req, res) {
   const groupIdent = req.params.ident;
   const properties = req.body;
 
-  groupController.updateGroup(groupSchema, groupIdent, properties, function(updateRes) {
-    res.json(updateRes);
-  });
+  groupController.updateGroup(
+      groupSchema,
+      groupIdent,
+      properties,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Delete group
@@ -55,9 +63,15 @@ router.delete('/:ident', function(req, res) {
   const userSchema = req.userSchema;
   const groupIdent = req.params.ident;
 
-  groupController.deleteGroup(groupSchema, userSchema, userController, groupIdent, function(deleteRes) {
-    res.json(deleteRes);
-  });
+  groupController.deleteGroup(
+      groupSchema,
+      userSchema,
+      userController,
+      groupIdent,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Add user to group
@@ -69,9 +83,16 @@ router.post('/:groupIdent/users', function(req, res) {
   const groupIdent = req.params.groupIdent;
   const userIdent = req.body.user;
 
-  groupController.addUser(groupSchema, userSchema, userController, groupIdent, userIdent, function(addRes) {
-    res.json(addRes);
-  });
+  groupController.addUser(
+      groupSchema,
+      userSchema,
+      userController,
+      groupIdent,
+      userIdent,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Remove user from group
@@ -83,9 +104,16 @@ router.delete('/:groupIdent/users/:userIdent', function(req, res) {
   const groupIdent = req.params.groupIdent;
   const userIdent = req.params.userIdent;
 
-  groupController.deleteUser(groupSchema, userSchema, userController, groupIdent, userIdent, function(deleteRes) {
-    res.json(deleteRes);
-  });
+  groupController.deleteUser(
+      groupSchema,
+      userSchema,
+      userController,
+      groupIdent,
+      userIdent,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Add game to group
@@ -97,9 +125,16 @@ router.post('/:groupIdent/games', function(req, res, next) {
   const groupIdent = req.params.groupIdent;
   const gameIdent = req.body.game;
 
-  groupController.addGame(groupSchema, gameSchema, gameController, groupIdent, gameIdent, function(addRes) {
-    res.json(addRes);
-  });
+  groupController.addGame(
+      groupSchema,
+      gameSchema,
+      gameController,
+      groupIdent,
+      gameIdent,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Remove game from group
@@ -111,9 +146,16 @@ router.delete('/:groupIdent/games/:gameIdent', function(req, res) {
   const groupIdent = req.params.groupIdent;
   const gameIdent = req.params.gameIdent;
 
-  groupController.deleteGame(groupSchema, gameSchema, gameController, groupIdent, gameIdent, function(deleteRes) {
-    res.json(deleteRes);
-  });
+  groupController.deleteGame(
+      groupSchema,
+      gameSchema,
+      gameController,
+      groupIdent,
+      gameIdent,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 // Update stats in a group
@@ -123,10 +165,16 @@ router.post('/:groupIdent/stats', function(req, res) {
   const winners = req.body.winners;
   const players = req.body.players;
   const game = req.body.game;
-  
-  groupController.updateStats(groupSchema, winners, players, game, function(updateRes) {
-    res.json(updateRes);
-  });
+
+  groupController.updateStats(
+      groupSchema,
+      winners,
+      players,
+      game,
+      function(status, body) {
+        res.status(status);
+        res.json(body);
+      });
 });
 
 module.exports = router;

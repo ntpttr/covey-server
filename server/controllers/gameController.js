@@ -15,80 +15,84 @@ const bgg = require('bgg')(bggOptions);
 
 /**
  * Gets list of games from the database.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {function} callback - The callback function.
  */
-function getGamesDb(gameSchema, callback) {
-  gameSchema.find({}, function(err, games) {
+function listGamesDb(Game, callback) {
+  Game.find({}, function(err, games) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding games!'});
+      callback(500, {
+        'message': err,
+      });
     } else {
-      callback({
-        'status': true,
-        'games': games});
+      callback(200, {
+        'games': games,
+      });
     }
   });
 }
 
 /**
  * Gets a specific game from the database.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} ident - The identity of the game, either ID or name.
  * @param {function} callback - The callback function.
  */
-function getGameDb(gameSchema, ident, callback) {
-  getGameByIdDb(gameSchema, ident, function(res) {
-    if (res.status) {
-      callback(res);
+function getGameDb(Game, ident, callback) {
+  getGameByIdDb(Game, ident, function(status, body) {
+    if (status == 200) {
+      callback(status, body);
     } else {
       // If game not found by ID, try name.
-      getGameByNameDb(gameSchema, ident, callback);
+      getGameByNameDb(Game, ident, callback);
     }
   });
 }
 
 /**
  * Get a specific game using its ID.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} id - The game ID.
  * @param {function} callback - The callback function.
  */
-function getGameByIdDb(gameSchema, id, callback) {
-  gameSchema.findById(id, function(err, game) {
+function getGameByIdDb(Game, id, callback) {
+  Game.findById(id, function(err, game) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding game with id ' + id + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (game) {
-      callback({'status': true, 'game': game});
+      callback(200, {
+        'game': game,
+      });
     } else {
-      callback({
-        'status': false,
-        'message': 'Game with ID ' + id + ' not found in the database.'});
+      callback(404, {
+        'message': 'Game ' + id + ' not found in the database.',
+      });
     }
   });
 }
 
 /**
  * Get a specific game using its name.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} name - The name of the game.
  * @param {function} callback - The callback function.
  */
-function getGameByNameDb(gameSchema, name, callback) {
-  gameSchema.findOne({name: name.toLowerCase()}, function(err, game) {
+function getGameByNameDb(Game, name, callback) {
+  Game.findOne({name: name.toLowerCase()}, function(err, game) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding game with name ' + name + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (game) {
-      callback({'status': true, 'game': game});
+      callback(200, {
+        'game': game,
+      });
     } else {
-      callback({
-        'status': false,
-        'message': 'Game with name ' + name + ' not found in the database.'});
+      callback(404, {
+        'message': 'Game ' + name + ' not found in the database.',
+      });
     }
   });
 }
@@ -101,107 +105,110 @@ function getGameByNameDb(gameSchema, name, callback) {
 function saveGameDb(game, callback) {
   game.save(function(err) {
     if (err) {
-      let errMessage = '';
       if (err.code === 11000) {
-        // Game already saved in the database
-        errMessage = 'Game already saved!';
+        // Duplicate game found
+        callback(409, {
+          'message': 'Game ' + game.name + ' already exists!',
+        });
+        return;
       } else {
-        errMessage = 'Error saving game!';
+        callback(500, {
+          'message': err,
+        });
+        return;
       }
-      callback({'status': false, 'message': errMessage});
-      return;
     }
-    callback({'status': true, 'game': game});
+    callback(201, {
+      'game': game,
+    });
   });
 }
 
 /**
  * Save a custom game not from the BoardGameGeek API.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {object} properties - The game properties.
  * @param {function} callback - The callback function.
  */
-function saveCustomGame(gameSchema, properties, callback) {
-  const game = new gameSchema(properties);
+function saveCustomGame(Game, properties, callback) {
+  const game = new Game(properties);
   saveGameDb(game, callback);
 }
 
 /**
  * Save a game from the BoardGameGeek API to the database.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} name - The name of the board game.
  * @param {function} callback - The callback function.
  */
-function saveBggGame(gameSchema, name, callback) {
-  getGameBgg(name, function(getRes) {
-    if (getRes.status) {
-      const game = new gameSchema(getRes.game);
+function saveBggGame(Game, name, callback) {
+  getGameBgg(name, function(status, body) {
+    if (status == 200) {
+      const game = new Game(body.game);
       saveGameDb(game, callback);
     } else {
-      callback({'status': false, 'message': getRes.message});
+      callback(status, body);
     }
   });
 }
 
 /**
  * Delete a game from the database.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} ident - The identity of the game, either ID or name.
  * @param {function} callback - The callback function.
  */
-function deleteGame(gameSchema, ident, callback) {
-  deleteGameById(gameSchema, ident, function(res) {
-    if (res.status) {
-      callback(res);
+function deleteGame(Game, ident, callback) {
+  deleteGameById(Game, ident, function(status, body) {
+    if (status == 200) {
+      callback(status, body);
     } else {
       // If game not found by ID, try name.
-      deleteGameByName(gameSchema, ident, callback);
+      deleteGameByName(Game, ident, callback);
     }
   });
 }
 
 /**
  * Delete a specific game from the database using its ID.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} id - The game ID.
  * @param {function} callback - The callback function.
  */
-function deleteGameById(gameSchema, id, callback) {
-  gameSchema.findByIdAndRemove(id, function(err, game) {
+function deleteGameById(Game, id, callback) {
+  Game.findByIdAndRemove(id, function(err, game) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error finding game with id ' + id + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (game) {
-      callback({'status': true});
+      callback(200, {});
     } else {
-      callback({
-        'status': false,
-        'message': 'Game with ID ' + id + ' not found in the database.'});
+      callback(404, {
+        'message': 'Game ' + id + ' not found in the database.',
+      });
     }
   });
 }
 
 /**
  * Delete a specific game from the database using its name.
- * @param {schema} gameSchema - The game mongoose schema.
+ * @param {schema} Game - The game mongoose schema.
  * @param {string} name - The name of the game.
  * @param {function} callback - The callback function.
  */
-function deleteGameByName(gameSchema, name, callback) {
-  gameSchema.findOneAndRemove({name: name.toLowerCase()}, function(err, game) {
+function deleteGameByName(Game, name, callback) {
+  Game.findOneAndRemove({name: name.toLowerCase()}, function(err, game) {
     if (err) {
-      callback({
-        'status': false,
-        'message': 'Database error deleting game ' + name + '!'});
+      callback(500, {
+        'message': err,
+      });
     } else if (game) {
-      callback({
-        'status': true,
-        'message': 'Game ' + name + ' deleted successfully.'});
+      callback(200, {});
     } else {
-      callback({
-        'status': false,
-        'message': 'Game ' + name + ' not found in the database.'});
+      callback(404, {
+        'message': 'Game ' + name + ' not found in the database.',
+      });
     }
   });
 }
@@ -213,20 +220,22 @@ function deleteGameByName(gameSchema, name, callback) {
  */
 function getGameBgg(name, callback) {
   // TODO(ntpttr): Add error handling if bgg can't connect.
-  searchGameBgg(name, function(search) {
-    if (search.err) {
-      callback({'status': false, 'message': search.err});
+  searchGameBgg(name, function(searchStatus, searchBody) {
+    if (searchStatus != 200) {
+      callback(searchStatus, searchBody);
     }
-    if (search.items.total != 1) {
-      callback({'status': false, 'message': 'Game ' + name + ' not found!'});
+    if (searchBody.items.total != 1) {
+      callback(404, {
+        'message': 'Game ' + name + ' not found!',
+      });
       return;
     }
-    const id = search.items.item.id;
-    getGameByIdBgg(id, function(game) {
-      if (game.err) {
-        callback({'status': false, 'message': game.err});
+    const id = searchBody.items.item.id;
+    getGameByIdBgg(id, function(getStatus, getBody) {
+      if (getStatus != 200) {
+        callback(getStatus, getBody);
       }
-      const item = game.items.item;
+      const item = getBody.items.item;
       let name;
       // Get primary name from list of possible alternates
       for (i=0; i<item.name.length; i++) {
@@ -244,7 +253,9 @@ function getGameBgg(name, callback) {
         'maxPlayers': item.maxplayers.value,
         'playingTime': item.playingtime.value,
       };
-      callback({'status': true, 'game': gameDetail});
+      callback(200, {
+        'game': gameDetail,
+      });
     });
   });
 }
@@ -259,10 +270,12 @@ function getGameByIdBgg(id, callback) {
     bgg('thing', {
       id: id,
     }).then(function(results) {
-      callback(results);
+      callback(200, results);
     });
   } catch (err) {
-    callback({'err': 'Error getting game from BGG API!'});
+    callback(500, {
+      'message': err,
+    });
   }
 }
 
@@ -278,15 +291,17 @@ function searchGameBgg(name, callback) {
       type: 'boardgame',
       exact: 1,
     }).then(function(results) {
-      callback(results);
+      callback(200, results);
     });
   } catch (err) {
-    callback({'err': 'Error searching for game with BGG API!'});
+    callback(500, {
+      'message': err,
+    });
   }
 }
 
 module.exports = {
-  getGamesDb,
+  listGamesDb,
   getGameDb,
   saveCustomGame,
   saveBggGame,
