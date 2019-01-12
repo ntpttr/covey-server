@@ -38,12 +38,10 @@ describe('User Controller', function() {
     const user = new User(testUser1);
     User.findOne.yields(null, user);
     userController.authenticate(
-        User,
-        {
-          'name': 'testuser1',
-          'password': 'Password123',
-        }, function(auth) {
-          expect(auth.status).to.eql(true);
+        User, {'name': 'testuser1', 'password': 'Password123'},
+        function(status, body) {
+          expect(status).to.eql(200);
+          expect(body).to.eql({});
         });
   });
 
@@ -54,12 +52,10 @@ describe('User Controller', function() {
     const user = new User(testUser1);
     User.findOne.yields(null, user);
     userController.authenticate(
-        User,
-        {
-          'name': 'testuser1',
-          'password': 'Password321',
-        }, function(auth) {
-          expect(auth.status).to.eql(false);
+        User, {'name': 'testuser1', 'password': 'Password321'},
+        function(status, body) {
+          expect(status).to.eql(401);
+          expect(body).to.eql({'message': 'Invalid username or password.'});
         });
   });
 
@@ -68,18 +64,18 @@ describe('User Controller', function() {
     const user2 = new User(testUser2);
     const userList = [user1, user2];
     User.find.yields(null, userList);
-    userController.listUsers(User, function(result) {
-      expect(result.status).to.eql(true);
-      expect(result.users).to.eql(userList);
+    userController.listUsers(User, function(status, body) {
+      expect(status).to.eql(200);
+      expect(body.users).to.eql(userList);
     });
   });
 
   it('should get a user by id', function() {
     const user = new User(testUser1);
     User.findById.yields(null, user);
-    userController.getUser(User, 'mockid', function(result) {
-      expect(result.status).to.eql(true);
-      expect(result.user).to.eql(user);
+    userController.getUser(User, 'mockid', function(status, body) {
+      expect(status).to.eql(200);
+      expect(body.user).to.eql(user);
     });
   });
 
@@ -87,17 +83,18 @@ describe('User Controller', function() {
     const user = new User(testUser1);
     User.findById.yields(null, null);
     User.findOne.yields(null, user);
-    userController.getUser(User, user.name, function(result) {
-      expect(result.status).to.eql(true);
-      expect(result.user).to.eql(user);
+    userController.getUser(User, user.name, function(status, body) {
+      expect(status).to.eql(200);
+      expect(body.user).to.eql(user);
     });
   });
 
   it('should not get a nonexistant user', function() {
     User.findById.yields(null, null);
     User.findOne.yields(null, null);
-    userController.getUser(User, 'non-user', function(result) {
-      expect(result.status).to.eql(false);
+    userController.getUser(User, 'non-user', function(status, body) {
+      expect(status).to.eql(404);
+      expect(body.message).to.eql('User non-user not found.');
     });
   });
 
@@ -108,9 +105,9 @@ describe('User Controller', function() {
         User,
         user.name,
         {'name': 'newName'},
-        function(result) {
-          expect(result.status).to.eql(true);
-          expect(result.user.name).to.eql('newName');
+        function(status, body) {
+          expect(status).to.eql(200);
+          expect(body.user.name).to.eql('newName');
         });
   });
 
@@ -125,8 +122,9 @@ describe('User Controller', function() {
         Group,
         groupController,
         'mockid',
-        function(result) {
-          expect(result.status).to.eql(true);
+        function(status, body) {
+          expect(status).to.eql(200);
+          expect(body).to.eql({});
         });
     user.getGroups.restore();
   });
@@ -156,8 +154,8 @@ describe('User Controller', function() {
         Group,
         groupController,
         user._id,
-        function(result) {
-          expect(result.status).to.eql(true);
+        function(status, body) {
+          expect(status).to.eql(200);
           expect(group.users).to.eql([]);
         });
     Group.findById.restore();

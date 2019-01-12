@@ -16,12 +16,11 @@ describe('User Routes', function() {
   });
 
   it('should list all users', function(done) {
-    const expected = {'status': true, 'users': ['user1', 'user2']};
-    sinon.stub(userController, 'listUsers').callsArgWith(1, expected);
+    const expected = {'users': ['user1', 'user2']};
+    sinon.stub(userController, 'listUsers').callsArgWith(1, 200, expected);
     request
         .get('/users')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
           expect(res.body).to.eql(expected);
           userController.listUsers.restore();
@@ -30,12 +29,11 @@ describe('User Routes', function() {
   });
 
   it('should get a specific user', function(done) {
-    const expected = {'status': true, 'user': 'user1'};
-    sinon.stub(userController, 'getUser').callsArgWith(2, expected);
+    const expected = {'user': 'user1'};
+    sinon.stub(userController, 'getUser').callsArgWith(2, 200, expected);
     request
         .get('/users/user1')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
           expect(res.body).to.eql(expected);
           userController.getUser.restore();
@@ -44,13 +42,13 @@ describe('User Routes', function() {
   });
 
   it('should create a new user', function(done) {
-    const expected = {'status': true, 'user': 'user1'};
-    sinon.stub(userController, 'createUser').callsArgWith(2, expected);
+    const expected = {'user': 'user1'};
+    sinon.stub(userController, 'createUser').callsArgWith(2, 201, expected);
     request
         .post('/users')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
+          expect(res.status).to.eql(201);
           expect(res.body).to.eql(expected);
           userController.createUser.restore();
           done();
@@ -58,13 +56,13 @@ describe('User Routes', function() {
   });
 
   it('should update an existing user', function(done) {
-    const expected = {'status': true, 'user': 'updatedUser1'};
-    sinon.stub(userController, 'updateUser').callsArgWith(3, expected);
+    const expected = {'user': 'updatedUser1'};
+    sinon.stub(userController, 'updateUser').callsArgWith(3, 200, expected);
     request
         .put('/users/user1')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
+          expect(res.status).to.eql(200);
           expect(res.body).to.eql(expected);
           userController.updateUser.restore();
           done();
@@ -72,28 +70,26 @@ describe('User Routes', function() {
   });
 
   it('should authenticate a user', function(done) {
-    const expected = {'status': true, 'users': ['user1', 'user2']};
-    sinon.stub(userController, 'listUsers').callsArgWith(1, expected);
+    sinon.stub(userController, 'listUsers').callsArgWith(1, 200, {});
     request
         .get('/users')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
-          expect(res.body).to.eql(expected);
+          expect(res.status).to.eql(200);
+          expect(res.body).to.eql({});
           userController.listUsers.restore();
           done();
         });
   });
 
   it('should delete a user', function(done) {
-    const expected = {'status': true};
-    sinon.stub(userController, 'deleteUser').callsArgWith(4, expected);
+    sinon.stub(userController, 'deleteUser').callsArgWith(4, 200, {});
     request
         .delete('/users/user1')
         .expect('Content-type', /json/)
-        .expect(200)
         .end(function(err, res) {
-          expect(res.body).to.eql(expected);
+          expect(res.status).to.eql(200);
+          expect(res.body).to.eql({});
           userController.deleteUser.restore();
           done();
         });
