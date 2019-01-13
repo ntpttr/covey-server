@@ -38,16 +38,14 @@ export default class extends React.Component {
             },
             body: JSON.stringify(data)
         }).then((res) => {
-            return res.json();
-        }).then((data) => {
-            if (data.err) {
-                console.log('Error: ' + data.err);
+            if (res.status == 500) {
+                console.log('Error: ' + res.body.message);
                 this.props.updateLogin(false);
-            } else if (data.status) {
+            } else if (res.status == 200) {
                 this.props.updateLogin(true);
             } else {
                 this.props.updateLogin(false);
-                if (data.foundUser) {
+                if (res.status == 401) {
                     console.log('Incorrect password for user ' + username);
                 } else {
                     console.log('User ' + username + ' not found!');

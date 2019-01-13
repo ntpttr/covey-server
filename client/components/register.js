@@ -44,10 +44,8 @@ export default class extends React.Component {
             },
             body: JSON.stringify(data)
         }).then((res) => {
-            return res.json();
-        }).then((data) => {
-            if (data.status == false) {
-                console.log(data.message);
+            if (res != 201) {
+                console.log(res.body.message);
             } else {
                 this.props.updateLogin(true);
             }
