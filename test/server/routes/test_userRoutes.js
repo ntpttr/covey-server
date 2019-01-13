@@ -1,19 +1,11 @@
-const supertest = require('supertest');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
-describe('User Routes', function() {
-  const userController = require('../../../server/controllers/userController');
+module.exports = function(request) {
+  const userController = require(
+      '../../../server/controllers/userController');
   mockRequire('../../../server/controllers/userController', userController);
-  const app = require('../../../app');
-  server = app.startServer(app.server);
-  request = supertest.agent(server);
-
-  after(function(done) {
-    server.close();
-    done();
-  });
 
   it('should list all users', function(done) {
     const expected = {'users': ['user1', 'user2']};
@@ -94,4 +86,4 @@ describe('User Routes', function() {
           done();
         });
   });
-});
+};

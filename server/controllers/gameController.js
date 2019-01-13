@@ -108,7 +108,7 @@ function saveGameDb(game, callback) {
       if (err.code === 11000) {
         // Duplicate game found
         callback(409, {
-          'message': 'Game ' + game.name + ' already exists!',
+          'message': 'Game ' + game.name + ' already exists.',
         });
         return;
       } else {
