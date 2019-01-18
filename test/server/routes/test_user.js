@@ -3,9 +3,8 @@ const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
 module.exports = function(request) {
-  const userController = require(
-      '../../../server/controllers/userController');
-  mockRequire('../../../server/controllers/userController', userController);
+  const userController = require('../../../controllers/user');
+  mockRequire('../../../controllers/user', userController);
 
   it('should list all users', function(done) {
     const expected = {'users': ['user1', 'user2']};

@@ -1,10 +1,10 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const User = require('../../../server/models/User');
-const Group = require('../../../server/models/Group');
-const userController = require('../../../server/controllers/userController');
-const groupController = require('../../../server/controllers/groupController');
+const User = require('../../../models/User');
+const Group = require('../../../models/Group');
+const userController = require('../../../controllers/user');
+const groupController = require('../../../controllers/group');
 
 const testUser1 = {
   'name': 'testuser1',

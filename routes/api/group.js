@@ -1,4 +1,4 @@
-// server/routes/groupRoutes.js
+// routes/api/group.js
 
 const express = require('express');
 const router = new express.Router();

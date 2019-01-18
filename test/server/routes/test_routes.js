@@ -20,6 +20,6 @@ describe('Routes', function() {
     done();
   });
 
-  importTest('Game Routes', './test_gameRoutes');
-  importTest('User Routes', './test_userRoutes');
+  importTest('Game Routes', './test_game');
+  importTest('User Routes', './test_user');
 });

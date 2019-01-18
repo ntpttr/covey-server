@@ -3,9 +3,8 @@ const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
 module.exports = function(request) {
-  const gameController = require(
-      '../../../server/controllers/gameController');
-  mockRequire('../../../server/controllers/gameController', gameController);
+  const gameController = require('../../../controllers/game');
+  mockRequire('../../../controllers/game', gameController);
 
   it('should list all games', function(done) {
     const expected = {'games': ['game1', 'game2']};

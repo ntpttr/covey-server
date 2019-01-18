@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 
-const Game = require('../../../server/models/Game');
+const Game = require('../../../models/Game');
 
 describe('Game Schema', function() {
   it('should be invalid if name is empty', function() {

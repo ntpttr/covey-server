@@ -1,8 +1,8 @@
 const expect = require('chai').expect;
 
-const Game = require('../../../server/models/Game');
-const Group = require('../../../server/models/Group');
-const User = require('../../../server/models/User');
+const Game = require('../../../models/Game');
+const Group = require('../../../models/Group');
+const User = require('../../../models/User');
 
 
 // User model

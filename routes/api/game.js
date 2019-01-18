@@ -1,4 +1,4 @@
-// server/routes/gameRoutes.js
+// routes/api/game.js
 
 const express = require('express');
 const router = new express.Router();

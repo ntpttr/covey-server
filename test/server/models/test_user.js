@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 
-const Group = require('../../../server/models/Group');
-const User = require('../../../server/models/User');
+const Group = require('../../../models/Group');
+const User = require('../../../models/User');
 
 // Group model
 const testGroup = {

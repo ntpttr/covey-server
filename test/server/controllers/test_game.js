@@ -1,8 +1,8 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const Game = require('../../../server/models/Game');
-const gameController = require('../../../server/controllers/gameController');
+const Game = require('../../../models/Game');
+const gameController = require('../../../controllers/game');
 
 const testGame = {
   name: 'testgame',

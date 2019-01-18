@@ -1,4 +1,4 @@
-// server/routes/userRoutes.js
+// routes/api/user.js
 
 const express = require('express');
 const router = new express.Router();
