@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const app = require('../../../app');
-const server = app.startServer(app.server);
+const server = app.server;
 const request = supertest.agent(server);
 
 describe('Routes', function() {
