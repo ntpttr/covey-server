@@ -1,38 +1,43 @@
 // server/controllers/userController.js
 
+const passport = require('passport');
+
 /**
  * Authenticate a user based on credentials.
- * @param {schema} User - The user mongoose schema.
  * @param {object} creds - The credentials to check.
  * @param {function} callback - The callback function.
  */
-function authenticate(User, creds, callback) {
-  const name = creds.name;
-  const password = creds.password;
-  User.findOne({name: name}, function(err, user) {
-    if (err) { // err indicates error, not no result found
+function authenticate(creds, callback) {
+  if (!creds.body.username) {
+    callback(422, {
+      'message': 'Username is empty.',
+    });
+    return;
+  }
+
+  if (!creds.body.password) {
+    callback(422, {
+      'message': 'Password is empty.',
+    });
+    return;
+  }
+
+  passport.authenticate('local', {session: false}, function(err, user, info) {
+    if (err) {
       callback(500, {
         'message': err,
       });
       return;
     }
 
-    if (user) { // found the user!
-      user.comparePassword(password, function(err, isMatch) {
-        if (isMatch) {
-          callback(200, {});
-        } else {
-          callback(401, {
-            'message': 'Invalid username or password.',
-          });
-        }
+    if (user) {
+      callback(200, {
+        'user': user,
       });
     } else {
-      callback(404, {
-        'message': 'User ' + name + ' not found',
-      });
+      callback(422, info);
     }
-  });
+  })(creds, callback);
 };
 
 /**
@@ -98,11 +103,11 @@ function getUserById(User, id, callback) {
 /**
  * Get a user based on its name.
  * @param {schema} User - The user mongoose schema.
- * @param {string} name - The user name.
+ * @param {string} username - The username.
  * @param {function} callback - The callback function.
  */
-function getUserByName(User, name, callback) {
-  User.findOne({name: name}, function(err, user) {
+function getUserByName(User, username, callback) {
+  User.findOne({username: username}, function(err, user) {
     if (err) {
       callback(500, {
         'message': err,
@@ -113,7 +118,7 @@ function getUserByName(User, name, callback) {
       });
     } else {
       callback(404, {
-        'message': 'User ' + name + ' not found.',
+        'message': 'User ' + username + ' not found.',
       });
     }
   });
@@ -126,7 +131,10 @@ function getUserByName(User, name, callback) {
  * @param {function} callback - The callback function.
  */
 function createUser(User, properties, callback) {
-  user = new User(properties);
+  user = new User();
+
+  user.username = properties.username;
+  user.setPassword(properties.password);
 
   user.save(function(err) {
     if (err) {

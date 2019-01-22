@@ -6,6 +6,7 @@ const express = require('express');
 const session = require('express-session');
 const bodyParser =require('body-parser');
 const mongoose = require('mongoose');
+const passport = require('passport');
 
 // TODO(ntpttr): If we end up with a production mongodb somehow
 // update this url from development to production.
@@ -32,6 +33,8 @@ if (!testing) {
     if (err) throw err;
   });
 }
+
+require('./config/passport');
 
 // Server-side API.
 app.use(require('./routes'));

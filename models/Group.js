@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 
-const groupSchema = new mongoose.Schema({
+const GroupSchema = new mongoose.Schema({
   name: {type: String, required: true, index: {unique: true}},
   description: {type: String},
   users: {type: [{
@@ -17,7 +17,7 @@ const groupSchema = new mongoose.Schema({
   games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
 });
 
-groupSchema.methods.findUserIndex = function(userIdent) {
+GroupSchema.methods.findUserIndex = function(userIdent) {
   let index = -1;
   for (let i = 0; i < this.users.length; i++) {
     if (this.users[i].user.toString() == userIdent ||
@@ -29,7 +29,7 @@ groupSchema.methods.findUserIndex = function(userIdent) {
   return index;
 };
 
-groupSchema.methods.addUser = function(userId, userName) {
+GroupSchema.methods.addUser = function(userId, userName) {
   if (this.findUserIndex(userId) == -1) {
     if (mongoose.Types.ObjectId.isValid(userId)) {
       const stats = [];
@@ -46,7 +46,7 @@ groupSchema.methods.addUser = function(userId, userName) {
   return this.save();
 };
 
-groupSchema.methods.deleteUser = function(userIdent) {
+GroupSchema.methods.deleteUser = function(userIdent) {
   let userDeleted = false;
   const index = this.findUserIndex(userIdent);
   if (index >= 0) {
@@ -57,11 +57,11 @@ groupSchema.methods.deleteUser = function(userIdent) {
   return userDeleted;
 };
 
-groupSchema.methods.getUsers = function() {
+GroupSchema.methods.getUsers = function() {
   return this.users;
 };
 
-groupSchema.methods.findGameIndex = function(gameId) {
+GroupSchema.methods.findGameIndex = function(gameId) {
   let index = -1;
   for (let i = 0; i < this.games.length; i++) {
     if (this.games[i] == gameId) {
@@ -71,7 +71,7 @@ groupSchema.methods.findGameIndex = function(gameId) {
   return index;
 };
 
-groupSchema.methods.addGame = function(gameId) {
+GroupSchema.methods.addGame = function(gameId) {
   if (this.games.indexOf(gameId) === -1) {
     if (mongoose.Types.ObjectId.isValid(gameId)) {
       this.games.push(gameId);
@@ -87,7 +87,7 @@ groupSchema.methods.addGame = function(gameId) {
   return this.save();
 };
 
-groupSchema.methods.deleteGame = function(gameId) {
+GroupSchema.methods.deleteGame = function(gameId) {
   const index = this.findGameIndex(gameId);
   if (index >= 0) {
     this.games.splice(index, 1);
@@ -95,4 +95,4 @@ groupSchema.methods.deleteGame = function(gameId) {
   return this.save();
 };
 
-module.exports = mongoose.model('Group', groupSchema);
+module.exports = mongoose.model('Group', GroupSchema);

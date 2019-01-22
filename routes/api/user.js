@@ -1,28 +1,30 @@
 // routes/api/user.js
 
 const express = require('express');
+const auth = require('../auth');
 const router = new express.Router();
 
-// List all users
-router.get('/', function(req, res) {
+// Login
+router.post('/login', function(req, res, next) {
   const userController = req.userController;
-  const userSchema = req.userSchema;
 
-  userController.listUsers(userSchema, function(status, body) {
-    res.status(status);
-    res.json(body);
+  userController.authenticate(req, function(status, body) {
+    res.status(status).json(body.user.toAuthJSON());
   });
 });
 
-// Get specific user
-router.get('/:ident', function(req, res) {
+// Get current user
+router.get('/', auth.required, function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
-  const userIdent = req.params.ident;
+  const payload = req.payload;
 
-  userController.getUser(userSchema, userIdent, function(status, body) {
-    res.status(status);
-    res.json(body);
+  userController.getUser(userSchema, payload.id, function(status, body) {
+    if (status != 200) {
+      res.status(status).json({});
+    } else {
+      res.status(status).json({'user': body.user.toProfileJSON()});
+    }
   });
 });
 
@@ -33,56 +35,41 @@ router.post('/', function(req, res) {
   const properties = req.body;
 
   userController.createUser(userSchema, properties, function(status, body) {
-    res.status(status);
-    res.json(body);
+    res.status(status).json(body.user.toAuthJSON());
   });
 });
 
 // Update an existing user
-router.put('/:ident', function(req, res) {
+router.put('/', auth.required, function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
-  const userIdent = req.params.ident;
   const properties = req.body;
+  const payload = req.payload;
 
   userController.updateUser(
       userSchema,
-      userIdent,
+      payload.id,
       properties,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
-// Login
-router.post('/login', function(req, res) {
-  const userController = req.userController;
-  const userSchema = req.userSchema;
-  const creds = req.body;
-
-  userController.authenticate(userSchema, creds, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
 // Delete user
-router.delete('/:ident', function(req, res) {
+router.delete('/', auth.required, function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
   const groupController = req.groupController;
   const groupSchema = req.groupSchema;
-  const userIdent = req.params.ident;
+  const payload = req.payload;
 
   userController.deleteUser(
       userSchema,
       groupSchema,
       groupController,
-      userIdent,
+      payload.id,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
