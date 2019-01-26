@@ -24,8 +24,6 @@ router.use('/user', function(req, res, next) {
 router.use('/profiles', function(req, res, next) {
   req.userSchema = userSchema;
   req.userController = userController;
-  req.groupSchema = groupSchema;
-  req.groupController = groupController;
   next();
 }, require('./profile'));
 

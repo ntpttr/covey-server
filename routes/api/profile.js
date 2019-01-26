@@ -21,7 +21,11 @@ router.get('/:ident', auth.optional, function(req, res) {
   const userIdent = req.params.ident;
 
   userController.getUser(userSchema, userIdent, function(status, body) {
-    res.status(status).json({'user': body.user.toProfileJSON()});
+    if (status != 200) {
+      res.status(status).json({});
+    } else {
+      res.status(status).json({'user': body.user.toProfileJSON()});
+    }
   });
 });
 

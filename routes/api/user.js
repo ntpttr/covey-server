@@ -9,7 +9,26 @@ router.post('/login', function(req, res, next) {
   const userController = req.userController;
 
   userController.authenticate(req, function(status, body) {
-    res.status(status).json(body.user.toAuthJSON());
+    if (status != 200) {
+      res.status(status).json({});
+    } else {
+      res.status(status).json({'user': body.user.toAuthJSON()});
+    }
+  });
+});
+
+// Create new user
+router.post('/', function(req, res) {
+  const userController = req.userController;
+  const userSchema = req.userSchema;
+  const properties = req.body;
+
+  userController.createUser(userSchema, properties, function(status, body) {
+    if (status != 200) {
+      res.status(status).json({});
+    } else {
+      res.status(status).json({'user': body.user.toAuthSON()});
+    }
   });
 });
 
@@ -25,17 +44,6 @@ router.get('/', auth.required, function(req, res) {
     } else {
       res.status(status).json({'user': body.user.toProfileJSON()});
     }
-  });
-});
-
-// Create new user
-router.post('/', function(req, res) {
-  const userController = req.userController;
-  const userSchema = req.userSchema;
-  const properties = req.body;
-
-  userController.createUser(userSchema, properties, function(status, body) {
-    res.status(status).json(body.user.toAuthJSON());
   });
 });
 
