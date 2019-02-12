@@ -10,7 +10,7 @@ router.post('/login', function(req, res, next) {
 
   userController.authenticate(req, function(status, body) {
     if (status != 200) {
-      res.status(status).json({});
+      res.status(status).json(body);
     } else {
       res.status(status).json({'user': body.user.toAuthJSON()});
     }
