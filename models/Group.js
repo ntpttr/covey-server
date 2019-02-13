@@ -6,7 +6,7 @@ const GroupSchema = new mongoose.Schema({
   name: {type: String, required: true, index: {unique: true}},
   description: {type: String},
   users: {type: [{
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    id: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     name: {type: String},
     stats: {type: [{
       game: {type: mongoose.Schema.Types.ObjectId, ref: 'Game'},
@@ -20,7 +20,7 @@ const GroupSchema = new mongoose.Schema({
 GroupSchema.methods.findUserIndex = function(userIdent) {
   let index = -1;
   for (let i = 0; i < this.users.length; i++) {
-    if (this.users[i].user.toString() == userIdent ||
+    if (this.users[i].id.toString() == userIdent ||
         this.users[i].name == userIdent) {
       index = i;
       break;
@@ -40,7 +40,7 @@ GroupSchema.methods.addUser = function(userId, userName) {
           losses: 0,
         });
       }
-      this.users.push({user: userId, name: userName, stats: stats});
+      this.users.push({id: userId, name: userName, stats: stats});
     }
   }
   return this.save();

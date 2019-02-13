@@ -137,14 +137,14 @@ function updateGroup(Group, ident, properties, callback) {
 /**
  * Add a user to a group.
  * @param {schema} Group - The group mongoose schema.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - the user controller object.
  * @param {string} groupIdent - The group identifier, either name or ID.
  * @param {string} userIdent - The user identifier, either name or ID.
  * @param {function} callback - The callback function.
  */
 function addUser(Group,
-    userSchema,
+    User,
     userController,
     groupIdent,
     userIdent,
@@ -156,7 +156,7 @@ function addUser(Group,
     }
     group = body.group;
     userController.getUser(
-        userSchema,
+        User,
         userIdent,
         function(userStatus, userBody) {
           if (userStatus != 200) {
@@ -167,7 +167,9 @@ function addUser(Group,
           try {
             group.addUser(user._id, user.name);
             user.addGroup(group._id);
-            callback(200, {});
+            callback(200, {
+              'group': group,
+            });
           } catch (err) {
             callback(500, {
               'message': err,
@@ -180,7 +182,7 @@ function addUser(Group,
 /**
  * Remove a user from a group.
  * @param {schema} Group - The group mongoose schema.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - The user controller object.
  * @param {string} groupIdent - The group identifier, either name or ID.
  * @param {string} userIdent - The user identifier, either name or ID.
@@ -188,7 +190,7 @@ function addUser(Group,
  */
 function deleteUser(
     Group,
-    userSchema,
+    User,
     userController,
     groupIdent,
     userIdent,
@@ -200,7 +202,7 @@ function deleteUser(
     }
     group = body.group;
     userController.getUser(
-        userSchema,
+        User,
         userIdent,
         function(userStatus, userBody) {
           if (userStatus != 200) {
@@ -216,7 +218,9 @@ function deleteUser(
           try {
             group.deleteUser(user._id);
             user.deleteGroup(group._id);
-            callback(200, {});
+            callback(200, {
+              'group': group,
+            });
           } catch (err) {
             callback(500, {
               'message': err,
@@ -259,7 +263,9 @@ function addGame(
           game = gameBody.game;
           try {
             group.addGame(game._id);
-            callback(200, {});
+            callback(200, {
+              'group': group,
+            });
           } catch (err) {
             callback(500, {
               'message': err,
@@ -302,7 +308,9 @@ function deleteGame(
           game = gameBody.game;
           try {
             group.deleteGame(game._id);
-            callback(200, {});
+            callback(200, {
+              'group': group,
+            });
           } catch (err) {
             callback(500, {
               'message': err,
@@ -315,12 +323,12 @@ function deleteGame(
 /**
  * Delete a group.
  * @param {schema} Group - The group mongoose schema.
- * @param {schema} userSchema - The user mongoose schema.
+ * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - The user controller object.
  * @param {string} ident - The identifier for the group, either name or ID.
  * @param {function} callback - The callback function.
  */
-function deleteGroup(Group, userSchema, userController, ident, callback) {
+function deleteGroup(Group, User, userController, ident, callback) {
   // First delete this group from all user lists.
   getGroup(Group, ident, function(status, body) {
     if (status != 200) {
@@ -330,7 +338,7 @@ function deleteGroup(Group, userSchema, userController, ident, callback) {
     group = body.group;
     group.getUsers().forEach(function(user) {
       userController.getUser(
-          userSchema,
+          User,
           user.id,
           function(userStatus, userBody) {
             if (userStatus != 200) {
