@@ -38,7 +38,7 @@ app.use(session({
 }));
 
 if (!testing) {
-  mongoose.connect(url, { useNewUrlParser: true }, function(err) {
+  mongoose.connect(url, {useNewUrlParser: true}, function(err) {
     if (err) throw err;
   });
 }

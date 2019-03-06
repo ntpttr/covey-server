@@ -1,6 +1,7 @@
 // routes/index.js
 
-var router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 
 router.use('/', require('./api'));
 
