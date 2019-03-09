@@ -27,7 +27,7 @@ router.post('/', function(req, res) {
 
   userController.createUser(userSchema, properties, function(status, body) {
     if (status != 201) {
-      res.status(status).json({});
+      res.status(status).json(body);
     } else {
       res.status(status).json({
         'user': body.user.toAuthJSON(),

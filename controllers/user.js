@@ -35,7 +35,7 @@ function authenticate(creds, callback) {
         'user': user,
       });
     } else {
-      callback(422, info);
+      callback(400, info);
     }
   })(creds, callback);
 };
@@ -141,7 +141,7 @@ function createUser(User, properties, callback) {
       if (err.code === 11000) {
         // Duplicate username found
         callback(409, {
-          'message': 'User name ' + properties.name + ' already exists!',
+          'message': 'username already exists',
         });
         return;
       } else {
@@ -235,7 +235,7 @@ function deleteUserById(User, id, callback) {
       callback(200, {});
     } else {
       callback(404, {
-        'message': 'User ' + id + ' not found.',
+        'message': 'user not found',
       });
     }
   });

@@ -5,11 +5,17 @@ const User = require('../models/User');
 passport.use(new LocalStrategy(
     function(username, password, done) {
       User.findOne({username: username}).then(function(user) {
-        if (!user || !user.validPassword(password)) {
+        if (!user) {
           return done(
               null,
               false,
-              {'message': 'username or password is invalid'});
+              {'message': 'user not found'});
+        }
+        if (!user.validPassword(password)) {
+          return done(
+              null,
+              false,
+              {'message': 'password is incorrect'});
         }
 
         return done(null, user);
