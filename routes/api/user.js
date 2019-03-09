@@ -12,7 +12,9 @@ router.post('/login', function(req, res, next) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
-      res.status(status).json({'user': body.user.toAuthJSON()});
+      res.status(status).json({
+        'user': body.user.toAuthJSON(),
+      });
     }
   });
 });
@@ -24,10 +26,12 @@ router.post('/', function(req, res) {
   const properties = req.body;
 
   userController.createUser(userSchema, properties, function(status, body) {
-    if (status != 200) {
+    if (status != 201) {
       res.status(status).json({});
     } else {
-      res.status(status).json({'user': body.user.toAuthSON()});
+      res.status(status).json({
+        'user': body.user.toAuthJSON(),
+      });
     }
   });
 });
@@ -59,7 +63,7 @@ router.put('/', auth.required, function(req, res) {
       payload.id,
       properties,
       function(status, body) {
-        res.status(status).json(body);
+        res.status(status).json({'user': body.user.toProfileJSON()});
       });
 });
 
