@@ -56,18 +56,16 @@ router.put('/:ident', function(req, res) {
 });
 
 // Delete group
-router.delete('/:ident', function(req, res) {
+router.delete('/:groupName', function(req, res) {
   const groupController = req.groupController;
   const groupSchema = req.groupSchema;
-  const userController = req.userController;
   const userSchema = req.userSchema;
-  const groupIdent = req.params.ident;
+  const groupName = req.params.groupName;
 
   groupController.deleteGroup(
       groupSchema,
       userSchema,
-      userController,
-      groupIdent,
+      groupName,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -152,25 +150,6 @@ router.delete('/:groupIdent/games/:gameIdent', function(req, res) {
       gameController,
       groupIdent,
       gameIdent,
-      function(status, body) {
-        res.status(status);
-        res.json(body);
-      });
-});
-
-// Update stats in a group
-router.post('/:groupIdent/stats', function(req, res) {
-  const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
-  const winners = req.body.winners;
-  const players = req.body.players;
-  const game = req.body.game;
-
-  groupController.updateStats(
-      groupSchema,
-      winners,
-      players,
-      game,
       function(status, body) {
         res.status(status);
         res.json(body);

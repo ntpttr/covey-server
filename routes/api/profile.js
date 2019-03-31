@@ -1,20 +1,27 @@
-// routes/api/user.js
+// routes/api/profile.js
 
 const express = require('express');
 const auth = require('../auth');
 const router = new express.Router();
 
-// List all users
+// List all profiles
 router.get('/', function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
 
   userController.listUsers(userSchema, function(status, body) {
-    res.status(status).json(body);
+    if (status != 200) {
+      res.status(status).json(body);
+    } else {
+      for (let i = 0; i < body.users.length; i++) {
+        body.users[i] = body.users[i].toProfileJSON();
+      }
+      res.status(status).json(body);
+    }
   });
 });
 
-// Get specific user
+// Get specific profile
 router.get('/:ident', auth.optional, function(req, res) {
   const userController = req.userController;
   const userSchema = req.userSchema;
@@ -22,7 +29,7 @@ router.get('/:ident', auth.optional, function(req, res) {
 
   userController.getUser(userSchema, userIdent, function(status, body) {
     if (status != 200) {
-      res.status(status).json({});
+      res.status(status).json(body);
     } else {
       res.status(status).json({'user': body.user.toProfileJSON()});
     }

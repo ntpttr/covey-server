@@ -16,6 +16,7 @@ const UserSchema = new mongoose.Schema({
     index: true,
   },
   groups: [{type: mongoose.Schema.Types.ObjectId, ref: 'Group'}],
+  games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
   image: String,
   hash: String,
   salt: String,

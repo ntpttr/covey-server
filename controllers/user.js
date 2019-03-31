@@ -10,14 +10,14 @@ const passport = require('passport');
 function authenticate(creds, callback) {
   if (!creds.body.username) {
     callback(422, {
-      'message': 'Username is empty.',
+      'message': 'username is empty',
     });
     return;
   }
 
   if (!creds.body.password) {
     callback(422, {
-      'message': 'Password is empty.',
+      'message': 'password is empty',
     });
     return;
   }
@@ -60,53 +60,12 @@ function listUsers(User, callback) {
 }
 
 /**
- * Get a specific user.
- * @param {schema} User - The user mongoose schema.
- * @param {string} ident - The user identifier, either name or ID.
- * @param {function} callback - The callback function.
- */
-function getUser(User, ident, callback) {
-  getUserById(User, ident, function(status, body) {
-    if (status == 200) {
-      callback(status, body);
-    } else {
-      // If user not found by ID, try name.
-      getUserByName(User, ident, callback);
-    }
-  });
-}
-
-/**
- * Get a user based on its ID.
- * @param {schema} User - The user mongoose schema.
- * @param {string} id - The user ID.
- * @param {function} callback - The callback function.
- */
-function getUserById(User, id, callback) {
-  User.findById(id, function(err, user) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else if (user) {
-      callback(200, {
-        'user': user,
-      });
-    } else {
-      callback(404, {
-        'message': 'User ' + id + ' not found.',
-      });
-    }
-  });
-}
-
-/**
  * Get a user based on its name.
  * @param {schema} User - The user mongoose schema.
  * @param {string} username - The username.
  * @param {function} callback - The callback function.
  */
-function getUserByName(User, username, callback) {
+function getUser(User, username, callback) {
   User.findOne({username: username}, function(err, user) {
     if (err) {
       callback(500, {
@@ -118,7 +77,7 @@ function getUserByName(User, username, callback) {
       });
     } else {
       callback(404, {
-        'message': 'User ' + username + ' not found.',
+        'message': 'user not found',
       });
     }
   });
@@ -186,58 +145,102 @@ function updateUser(User, ident, properties, callback) {
 }
 
 /**
- * Delete a user.
- * @param {schema} User - The user mongoose schema.
- * @param {schema} groupSchema - The group mongoose schema.
- * @param {controller} groupController - The group conroller object.
- * @param {string} ident - The user identifier, either name or ID.
+ * Add a reference to a group
+ * @param {schema} User - The user mongoose schema
+ * @param {string} username - The username.
+ * @param {string} groupId - The group mongoose Id.
  * @param {function} callback - The callback function.
  */
-function deleteUser(User, groupSchema, groupController, ident, callback) {
-  // First delete this user from all groups.
-  getUser(User, ident, function(status, body) {
-    if (status != 200) {
-      callback(status, body);
-      return;
-    }
-    user = body.user;
-    user.getGroups().forEach(function(groupId) {
-      groupController.getGroup(
-          groupSchema,
-          groupId,
-          function(groupStatus, groupBody) {
-            if (groupStatus != 200) {
-              return;
-            }
-            group = groupBody.group;
-            group.deleteUser(user._id);
-          });
-    });
-    deleteUserById(User, user._id, function(status, body) {
-      callback(status, body);
-    });
-  });
-}
-
-/**
- * Delete a user by its ID.
- * @param {schema} User - The user mongoose schema.
- * @param {string} id - The user ID.
- * @param {function} callback - The callback function.
- */
-function deleteUserById(User, id, callback) {
-  User.findByIdAndRemove(id, function(err, user) {
+function addGroupLink(User, username, groupId, callback) {
+  User.findOneAndUpdate({
+    username: username,
+  }, {
+    $addToSet: {
+      groups: groupId,
+    },
+  }, {
+    new: true,
+  }).exec(function(err, user) {
     if (err) {
       callback(500, {
         'message': err,
       });
-    } else if (user) {
-      callback(200, {});
     } else {
-      callback(404, {
-        'message': 'user not found',
+      callback(200, {
+        'user': user,
       });
     }
+  });
+}
+
+/**
+ * Remove a reference to a group
+ * @param {schema} User - The user mongoose schema
+ * @param {string} username - The username.
+ * @param {string} groupId - The group mongoose Id.
+ * @param {function} callback - The callback function.
+ */
+function removeGroupLink(User, username, groupId, callback) {
+  User.findOneAndUpdate({
+    username: username,
+  }, {
+    $pull: {
+      groups: groupId,
+    },
+  }, {
+    new: true,
+  }).exec(function(err, user) {
+    if (err) {
+      callback(500, {
+        'message': err,
+      });
+    } else {
+      callback(200, {
+        'user': user,
+      });
+    }
+  });
+}
+
+/**
+ * Delete a user.
+ * @param {schema} User - The user mongoose schema.
+ * @param {schema} Group - The group mongoose schema.
+ * @param {string} username - The username.
+ * @param {function} callback - The callback function.
+ */
+function deleteUser(User, Group, username, callback) {
+  // First delete this group from all user lists.
+  User.findOne({
+    username: username,
+  }).populate('groups').exec(function(err, user) {
+    user.groups.forEach(function(group) {
+      Group.update({
+        _id: group._id,
+      }, {
+        $pull: {
+          users: user._id,
+        },
+      }).exec(function(err, user) {
+        console.log(user.username + ' removed from ' + group.name);
+      });
+    });
+
+    User.findByIdAndRemove(user._id, function(err, user) {
+      if (err) {
+        callback(500, {
+          'message': err,
+        });
+      } else if (user) {
+        callback(200, {
+          'message': 'user deleted successfully',
+        });
+      } else {
+        callback(404, {
+          'message': 'user not found',
+        });
+      }
+    });
   });
 }
 
@@ -247,5 +250,7 @@ module.exports = {
   getUser,
   createUser,
   updateUser,
+  addGroupLink,
+  removeGroupLink,
   deleteUser,
 };

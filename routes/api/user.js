@@ -42,7 +42,7 @@ router.get('/', auth.required, function(req, res) {
   const userSchema = req.userSchema;
   const payload = req.payload;
 
-  userController.getUser(userSchema, payload.id, function(status, body) {
+  userController.getUser(userSchema, payload.username, function(status, body) {
     if (status != 200) {
       res.status(status).json({});
     } else {
