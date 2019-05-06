@@ -3,10 +3,13 @@
 const mongoose = require('mongoose');
 
 const PlaySchema = new mongoose.Schema({
-  game: {type: mongoose.Schema.Types.ObjectId, ref: 'Game'},
+  game: {type: String, required: true},
+  group: {type: String},
   players: {type: [{
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    user: {type: String},
+    score: {type: Number},
     placement: {type: Number},
+    winner: {type: Boolean},
   }]},
 });
 
