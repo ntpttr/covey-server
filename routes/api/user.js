@@ -21,11 +21,12 @@ router.post('/login', function(req, res, next) {
 
 // Create new user
 router.post('/', function(req, res) {
+  const User = req.User;
   const userController = req.userController;
-  const userSchema = req.userSchema;
+
   const properties = req.body;
 
-  userController.createUser(userSchema, properties, function(status, body) {
+  userController.createUser(User, properties, function(status, body) {
     if (status != 201) {
       res.status(status).json(body);
     } else {
@@ -36,13 +37,30 @@ router.post('/', function(req, res) {
   });
 });
 
-// Get current user
+// Get current logged in user
 router.get('/', auth.required, function(req, res) {
+  const User = req.User;
   const userController = req.userController;
-  const userSchema = req.userSchema;
+
   const payload = req.payload;
 
-  userController.getUser(userSchema, payload.username, function(status, body) {
+  userController.getUser(User, payload.username, function(status, body) {
+    if (status != 200) {
+      res.status(status).json({});
+    } else {
+      res.status(status).json({'user': body.user.toProfileJSON()});
+    }
+  });
+});
+
+// Get specific user
+router.get('/:username', function(req, res) {
+  const User = req.User;
+  const userController = req.userController;
+
+  const username = req.params.username;
+
+  userController.getUser(User, username, function(status, body) {
     if (status != 200) {
       res.status(status).json({});
     } else {
@@ -53,14 +71,15 @@ router.get('/', auth.required, function(req, res) {
 
 // Update an existing user
 router.put('/', auth.required, function(req, res) {
+  const User = req.User;
   const userController = req.userController;
-  const userSchema = req.userSchema;
+
   const properties = req.body;
-  const payload = req.payload;
+  const username = req.payload.username;
 
   userController.updateUser(
-      userSchema,
-      payload.id,
+      User,
+      username,
       properties,
       function(status, body) {
         res.status(status).json({'user': body.user.toProfileJSON()});
@@ -69,17 +88,16 @@ router.put('/', auth.required, function(req, res) {
 
 // Delete user
 router.delete('/', auth.required, function(req, res) {
+  const User = req.User;
+  const Group = req.Group;
   const userController = req.userController;
-  const userSchema = req.userSchema;
-  const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
-  const payload = req.payload;
+
+  const username = req.payload.username;
 
   userController.deleteUser(
-      userSchema,
-      groupSchema,
-      groupController,
-      payload.id,
+      User,
+      Group,
+      username,
       function(status, body) {
         res.status(status).json(body);
       });

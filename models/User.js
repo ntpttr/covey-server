@@ -67,25 +67,4 @@ UserSchema.methods.toProfileJSON = function() {
   };
 };
 
-UserSchema.methods.addGroup = function(groupId) {
-  if (this.groups.indexOf(groupId) === -1) {
-    if (mongoose.Types.ObjectId.isValid(groupId)) {
-      this.groups.push(groupId);
-    }
-  }
-  return this.save();
-};
-
-UserSchema.methods.deleteGroup = function(groupId) {
-  const index = this.groups.indexOf(groupId);
-  if (index >= 0) {
-    this.groups.splice(index, 1);
-  }
-  return this.save();
-};
-
-UserSchema.methods.getGroups = function() {
-  return this.groups;
-};
-
 module.exports = mongoose.model('User', UserSchema);

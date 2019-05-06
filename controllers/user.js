@@ -41,6 +41,40 @@ function authenticate(creds, callback) {
 };
 
 /**
+ * Create a new user.
+ * @param {schema} User - The user mongoose schema.
+ * @param {object} properties - The user properties.
+ * @param {function} callback - The callback function.
+ */
+function createUser(User, properties, callback) {
+  user = new User();
+
+  user.username = properties.username;
+  user.setPassword(properties.password);
+
+  user.save(function(err) {
+    if (err) {
+      if (err.code === 11000) {
+        // Duplicate username found
+        callback(409, {
+          'message': 'username already exists',
+        });
+        return;
+      } else {
+        callback(500, {
+          'message': err,
+        });
+        return;
+      }
+    }
+
+    callback(201, {
+      'user': user,
+    });
+  });
+}
+
+/**
  * List users in the database.
  * @param {schema} User - The user mongoose schema.
  * @param {function} callback - The callback function.
@@ -84,51 +118,19 @@ function getUser(User, username, callback) {
 }
 
 /**
- * Create a new user.
- * @param {schema} User - The user mongoose schema.
- * @param {object} properties - The user properties.
- * @param {function} callback - The callback function.
- */
-function createUser(User, properties, callback) {
-  user = new User();
-
-  user.username = properties.username;
-  user.setPassword(properties.password);
-
-  user.save(function(err) {
-    if (err) {
-      if (err.code === 11000) {
-        // Duplicate username found
-        callback(409, {
-          'message': 'username already exists',
-        });
-        return;
-      } else {
-        callback(500, {
-          'message': err,
-        });
-        return;
-      }
-    }
-    callback(201, {
-      'user': user,
-    });
-  });
-}
-
-/**
  * Update an existing user.
  * @param {schema} User - The user mongoose schema.
- * @param {string} ident - The user identifier, either name or ID.
+ * @param {string} username - The username.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(User, ident, properties, callback) {
-  getUser(User, ident, function(status, body) {
+function updateUser(User, username, properties, callback) {
+  getUser(User, username, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
     }
+
     user = body.user;
     Object.assign(user, properties).save((err, user) => {
       if (err) {
@@ -210,37 +212,43 @@ function removeGroupLink(User, username, groupId, callback) {
  * @param {function} callback - The callback function.
  */
 function deleteUser(User, Group, username, callback) {
-  // First delete this group from all user lists.
   User.findOne({
     username: username,
   }).populate('groups').exec(function(err, user) {
-    user.groups.forEach(function(group) {
-      Group.update({
-        _id: group._id,
-      }, {
-        $pull: {
-          users: user._id,
-        },
-      }).exec(function(err, user) {
-        console.log(user.username + ' removed from ' + group.name);
+    if (err) {
+      callback(500, {
+        'error': err,
       });
-    });
 
-    User.findByIdAndRemove(user._id, function(err, user) {
-      if (err) {
-        callback(500, {
-          'message': err,
+      return;
+    }
+
+    if (user) {
+      // First delete this group from all user lists.
+      user.groups.forEach(function(group) {
+        Group.update({
+          _id: group._id,
+        }, {
+          $pull: {
+            users: user._id,
+          },
+        }).exec(function(err) {
+          if (err) {
+            console.log(err);
+          }
         });
-      } else if (user) {
-        callback(200, {
-          'message': 'user deleted successfully',
-        });
-      } else {
-        callback(404, {
-          'message': 'user not found',
-        });
-      }
-    });
+      });
+
+      user.remove();
+
+      callback(200, {
+        'message': 'user ' + username + ' deleted successfully',
+      });
+    } else {
+      callback(404, {
+        'message': 'user ' + username + ' not found',
+      });
+    }
   });
 }
 

@@ -4,43 +4,44 @@ const express = require('express');
 const router = new express.Router();
 
 // Define schema variables
-const userSchema = require('../../models/User');
-const groupSchema = require('../../models/Group');
-const gameSchema = require('../../models/Game');
+const User = require('../../models/User');
+const Group = require('../../models/Group');
+const Game = require('../../models/Game');
+const Play = require('../../models/Play');
 
 // Define controller variables
 const userController = require('../../controllers/user');
 const groupController = require('../../controllers/group');
 const gameController = require('../../controllers/game');
+const playController = require('../../controllers/play');
 
 router.use('/user', function(req, res, next) {
-  req.userSchema = userSchema;
+  req.User = User;
+  req.Group = Group;
   req.userController = userController;
-  req.groupSchema = groupSchema;
-  req.groupController = groupController;
   next();
 }, require('./user'));
 
-router.use('/profiles', function(req, res, next) {
-  req.userSchema = userSchema;
-  req.userController = userController;
-  next();
-}, require('./profile'));
-
 router.use('/groups', function(req, res, next) {
-  req.groupSchema = groupSchema;
+  req.Group = Group;
+  req.User = User;
+  req.Game = Game;
   req.groupController = groupController;
-  req.userSchema = userSchema;
   req.userController = userController;
-  req.gameSchema = gameSchema;
   req.gameController = gameController;
   next();
 }, require('./group'));
 
 router.use('/games', function(req, res, next) {
-  req.gameSchema = gameSchema;
+  req.Game = Game;
   req.gameController = gameController;
   next();
 }, require('./game'));
+
+router.use('/plays', function(req, res, next) {
+  req.Play = Play;
+  req.playController = playController;
+  next();
+}, require('./play'));
 
 module.exports = router;

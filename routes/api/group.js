@@ -5,22 +5,23 @@ const router = new express.Router();
 
 // List all groups
 router.get('/', function(req, res) {
+  const Group = req.Group;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
 
-  groupController.listGroups(groupSchema, function(status, body) {
+  groupController.listGroups(Group, function(status, body) {
     res.status(status);
     res.json(body);
   });
 });
 
 // Get specific group
-router.get('/:ident', function(req, res) {
+router.get('/:name', function(req, res) {
+  const Group = req.Group;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
-  const groupIdent = req.params.ident;
 
-  groupController.getGroup(groupSchema, groupIdent, function(status, body) {
+  const name = req.params.name;
+
+  groupController.getGroup(Group, name, function(status, body) {
     res.status(status);
     res.json(body);
   });
@@ -28,26 +29,28 @@ router.get('/:ident', function(req, res) {
 
 // Create new group
 router.post('/', function(req, res) {
+  const Group = req.Group;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
+
   const properties = req.body;
 
-  groupController.createGroup(groupSchema, properties, function(status, body) {
+  groupController.createGroup(Group, properties, function(status, body) {
     res.status(status);
     res.json(body);
   });
 });
 
 // Update an existing group
-router.put('/:ident', function(req, res) {
+router.put('/:name', function(req, res) {
+  const Group = req.Group;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
-  const groupIdent = req.params.ident;
+
+  const name = req.params.name;
   const properties = req.body;
 
   groupController.updateGroup(
-      groupSchema,
-      groupIdent,
+      Group,
+      name,
       properties,
       function(status, body) {
         res.status(status);
@@ -56,16 +59,17 @@ router.put('/:ident', function(req, res) {
 });
 
 // Delete group
-router.delete('/:groupName', function(req, res) {
+router.delete('/:name', function(req, res) {
+  const Group = req.Group;
+  const User = req.User;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
-  const userSchema = req.userSchema;
-  const groupName = req.params.groupName;
+
+  const name = req.params.name;
 
   groupController.deleteGroup(
-      groupSchema,
-      userSchema,
-      groupName,
+      Group,
+      User,
+      name,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -73,20 +77,21 @@ router.delete('/:groupName', function(req, res) {
 });
 
 // Add user to group
-router.post('/:groupIdent/users', function(req, res) {
+router.post('/:groupName/users', function(req, res) {
+  const Group = req.Group;
+  const User = req.User;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
   const userController = req.userController;
-  const userSchema = req.userSchema;
-  const groupIdent = req.params.groupIdent;
-  const userIdent = req.body.user;
+
+  const groupName = req.params.groupName;
+  const username = req.body.user;
 
   groupController.addUser(
-      groupSchema,
-      userSchema,
+      Group,
+      User,
       userController,
-      groupIdent,
-      userIdent,
+      groupName,
+      username,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -94,20 +99,21 @@ router.post('/:groupIdent/users', function(req, res) {
 });
 
 // Remove user from group
-router.delete('/:groupIdent/users/:userIdent', function(req, res) {
+router.delete('/:groupName/users', function(req, res) {
+  const Group = req.Group;
+  const User = req.User;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
   const userController = req.userController;
-  const userSchema = req.userSchema;
-  const groupIdent = req.params.groupIdent;
-  const userIdent = req.params.userIdent;
+
+  const groupName = req.params.groupIdent;
+  const username = req.body.user;
 
   groupController.deleteUser(
-      groupSchema,
-      userSchema,
+      Group,
+      User,
       userController,
-      groupIdent,
-      userIdent,
+      groupName,
+      username,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -115,20 +121,21 @@ router.delete('/:groupIdent/users/:userIdent', function(req, res) {
 });
 
 // Add game to group
-router.post('/:groupIdent/games', function(req, res, next) {
+router.post('/:groupName/games', function(req, res, next) {
+  const Group = req.Group;
+  const Game = req.Game;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
   const gameController = req.gameController;
-  const gameSchema = req.gameSchema;
-  const groupIdent = req.params.groupIdent;
-  const gameIdent = req.body.game;
+
+  const groupName = req.params.groupName;
+  const gameName = req.body.game;
 
   groupController.addGame(
-      groupSchema,
-      gameSchema,
+      Group,
+      Game,
       gameController,
-      groupIdent,
-      gameIdent,
+      groupName,
+      gameName,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -136,20 +143,21 @@ router.post('/:groupIdent/games', function(req, res, next) {
 });
 
 // Remove game from group
-router.delete('/:groupIdent/games/:gameIdent', function(req, res) {
+router.delete('/:groupName/games', function(req, res) {
+  const Group = req.Group;
+  const Game = req.Game;
   const groupController = req.groupController;
-  const groupSchema = req.groupSchema;
   const gameController = req.gameController;
-  const gameSchema = req.gameSchema;
-  const groupIdent = req.params.groupIdent;
-  const gameIdent = req.params.gameIdent;
+
+  const groupName = req.params.groupName;
+  const gameName = req.body.game;
 
   groupController.deleteGame(
-      groupSchema,
-      gameSchema,
+      Group,
+      Game,
       gameController,
-      groupIdent,
-      gameIdent,
+      groupName,
+      gameName,
       function(status, body) {
         res.status(status);
         res.json(body);
