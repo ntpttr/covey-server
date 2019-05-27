@@ -129,6 +129,14 @@ function addUser(Group, User, userController, displayName, username, callback) {
         return;
       }
 
+      if (group == null) {
+        callback(404, {
+          'message': 'Group ' + displayName + ' not found.'
+        });
+
+        return;
+      }
+
       userController.addGroupLink(
           User, user.username, group._id, function(addStatus, addBody) {
             if (addStatus != 200) {
@@ -138,7 +146,10 @@ function addUser(Group, User, userController, displayName, username, callback) {
 
             callback(200, {
               'group': group,
-              'user': addBody.user.toProfileJSON()});
+              'user': addBody.user.toProfileJSON(),
+              'message': 'User ' + username +
+              ' added to group ' + displayName + '.',
+            });
           });
     });
   });
@@ -179,6 +190,14 @@ function deleteUser(
         return;
       }
 
+      if (group == null) {
+        callback(404, {
+          'message': 'Group ' + displayName + ' not found.'
+        });
+
+        return;
+      }
+
       userController.removeGroupLink(
           User, user.username, group._id, function(removeStatus, removeBody) {
             if (removeStatus != 200) {
@@ -188,7 +207,10 @@ function deleteUser(
 
             callback(200, {
               'group': group,
-              'user': removeBody.user.toProfileJSON()});
+              'user': removeBody.user.toProfileJSON(),
+              'message': 'User ' + username +
+                         ' removed from group ' + displayName + '.',
+            });
           });
     });
   });

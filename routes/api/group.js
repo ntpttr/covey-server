@@ -105,7 +105,7 @@ router.delete('/:groupName/users', function(req, res) {
   const groupController = req.groupController;
   const userController = req.userController;
 
-  const groupName = req.params.groupIdent;
+  const groupName = req.params.groupName;
   const username = req.body.user;
 
   groupController.deleteUser(
