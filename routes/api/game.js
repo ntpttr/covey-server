@@ -24,38 +24,4 @@ router.get('/search/:name', function(req, res) {
   });
 });
 
-// Save game details to database
-router.post('/', function(req, res) {
-  const Game = req.Game;
-  const gameController = req.gameController;
-  const properties = req.body;
-
-  gameController.saveGame(Game, properties, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
-// Search bgg for a game
-router.get('/bggSearch/:name', function(req, res) {
-  const gameController = req.gameController;
-  const name = req.params.name;
-
-  gameController.searchGameBgg(name, function(status, body) {
-    res.status(status).json(body);
-  });
-});
-
-// Delete game from the DB
-router.delete('/:name', function(req, res) {
-  const Game = req.Game;
-  const gameController = req.gameController;
-  const name = req.params.name;
-
-  gameController.deleteGame(Game, name, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
 module.exports = router;

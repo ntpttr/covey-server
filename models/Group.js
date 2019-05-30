@@ -2,12 +2,21 @@
 
 const mongoose = require('mongoose');
 
+const GameSchema = new mongoose.Schema({
+  name: {type: String, required: true, index: {unique: true}},
+  description: {type: String},
+  thumbnail: {type: String},
+  image: {type: String},
+  minPlayers: {type: Number},
+  maxPlayers: {type: Number},
+  playingTime: {type: Number},
+});
+
 const GroupSchema = new mongoose.Schema({
   name: {type: String, required: true, index: {unique: true}},
   description: {type: String},
   users: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-  games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
-  plays: [{type: mongoose.Schema.Types.ObjectId, ref: 'Play'}],
+  games: [GameSchema],
 });
 
 module.exports = mongoose.model('Group', GroupSchema);

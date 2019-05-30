@@ -123,19 +123,15 @@ router.delete('/:groupName/users', function(req, res) {
 // Add game to group
 router.post('/:groupName/games', function(req, res, next) {
   const Group = req.Group;
-  const Game = req.Game;
   const groupController = req.groupController;
-  const gameController = req.gameController;
 
   const groupName = req.params.groupName;
-  const gameName = req.body.game;
+  const gameProperties = req.body;
 
   groupController.addGame(
       Group,
-      Game,
-      gameController,
       groupName,
-      gameName,
+      gameProperties,
       function(status, body) {
         res.status(status);
         res.json(body);
@@ -145,17 +141,13 @@ router.post('/:groupName/games', function(req, res, next) {
 // Remove game from group
 router.delete('/:groupName/games', function(req, res) {
   const Group = req.Group;
-  const Game = req.Game;
   const groupController = req.groupController;
-  const gameController = req.gameController;
 
   const groupName = req.params.groupName;
   const gameName = req.body.game;
 
   groupController.deleteGame(
       Group,
-      Game,
-      gameController,
       groupName,
       gameName,
       function(status, body) {

@@ -14,60 +14,6 @@ const bggOptions = {
 const bgg = require('bgg')(bggOptions);
 
 /**
- * Save a game to the database.
- * @param {Game} Game - The game mongoose schema.
- * @param {object} properties - The game properties.
- * @param {function} callback - The callback function.
- */
-function saveGame(Game, properties, callback) {
-  const game = new Game(properties);
-
-  game.save(function(err) {
-    if (err) {
-      if (err.code === 11000) {
-        // Duplicate game found
-        callback(409, {
-          'message': 'Game ' + game.name + ' already exists.',
-        });
-        return;
-      } else {
-        callback(500, {
-          'message': err,
-        });
-        return;
-      }
-    }
-    callback(201, {
-      'game': game,
-    });
-  });
-}
-
-/**
- * Delete a specific game from the database using its name.
- * @param {schema} Game - The game mongoose schema.
- * @param {string} name - The name of the game.
- * @param {function} callback - The callback function.
- */
-function deleteGame(Game, name, callback) {
-  Game.findOneAndRemove({name: name}, function(err, game) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else if (game) {
-      callback(200, {
-        'message': 'Game ' + name + ' successfully deleted.',
-      });
-    } else {
-      callback(404, {
-        'message': 'Game ' + name + ' not found in the database.',
-      });
-    }
-  });
-}
-
-/**
  * Get a game from the BoardGameGeek API using its name.
  * @param {string} name - The name of the game.
  * @param {function} callback - The callback function.
@@ -177,8 +123,6 @@ function searchGameBggExactMatch(name, callback) {
 }
 
 module.exports = {
-  saveGame,
-  deleteGame,
   getGameBgg,
   searchGameBgg,
 };

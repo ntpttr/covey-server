@@ -219,102 +219,111 @@ function deleteUser(
 /**
  * Add a game to the group.
  * @param {schema} Group - The group mongoose schema.
- * @param {schema} gameSchema - The game mongoose schema.
- * @param {controller} gameController - The game controller object.
  * @param {string} displayName - The group name.
- * @param {string} gameName - The game name.
+ * @param {string} gameProperties - The game properties.
  * @param {function} callback - The callback function.
  */
-function addGame(
-    Group, gameSchema, gameController, displayName, gameName, callback) {
-  getGroup(Group, displayName, function(status, body) {
-    if (status != 200) {
-      callback(status, body);
+function addGame(Group, displayName, gameProperties, callback) {
+  const {
+    name,
+    description,
+    thumbnail,
+    image,
+    minPlayers,
+    maxPlayers,
+    playingTime,
+  } = gameProperties;
+
+  if (!name) {
+    callback(400, {
+      'message': 'Must provide a game name',
+    });
+
+    return;
+  }
+
+  Group.findOneAndUpdate({
+    'name': displayName,
+    'games.name': {
+      $ne: name,
+    },
+  }, {
+    $push: {
+      games: {
+        name,
+        description,
+        thumbnail,
+        image,
+        minPlayers,
+        maxPlayers,
+        playingTime,
+      },
+    },
+  }, {
+    new: true,
+  }).exec(function(err, group) {
+    if (err) {
+      callback(500, {
+        'message': err,
+      });
+
       return;
     }
 
-    group = body.group;
-    gameController.getGameDb(
-        gameSchema, gameName, function(gameStatus, gameBody) {
-          if (gameStatus != 200) {
-            callback(gameStatus, gameBody);
-            return;
-          }
+    if (!group) {
+      callback(404, {
+        'message': 'Group ' + displayName + ' doesn\'t exist or already contains ' + name + '.',
+      });
 
-          game = gameBody.game;
-          Group.findOneAndUpdate({
-            name: displayName,
-          }, {
-            $addToSet: {
-              games: game._id,
-            },
-          }, {
-            new: true,
-          }).exec(function(err, group) {
-            if (err) {
-              callback(500, {
-                'message': err,
-              });
+      return;
+    }
 
-              return;
-            }
-
-            callback(200, {
-              'group': group,
-            });
-          });
-        });
+    callback(200, {
+      'group': group,
+      'message': name + ' added to group ' + displayName,
+    });
   });
 }
 
 /**
  * Remove a game from a group.
  * @param {schema} Group - The group mongoose schema.
- * @param {schema} gameSchema - The game mongoose schema.
- * @param {controller} gameController - The game controller object.
  * @param {string} displayName - The group name.
  * @param {string} gameName - The game name.
  * @param {function} callback - The callback funtion.
  */
-function deleteGame(
-    Group, gameSchema, gameController, displayName, gameName, callback) {
-  getGroup(Group, displayName, function(status, body) {
-    if (status != 200) {
-      callback(status, body);
+function deleteGame(Group, displayName, gameName, callback) {
+  Group.findOneAndUpdate({
+    name: displayName,
+  }, {
+    $pull: {
+      games: {
+        name: gameName,
+      },
+    },
+  }, {
+    new: true,
+  }).exec(function(err, group) {
+    if (err) {
+      callback(500, {
+        'message': err,
+      });
+
       return;
     }
 
-    group = body.group;
-    gameController.getGameDb(
-        gameSchema, gameName, function(gameStatus, gameBody) {
-          if (gameStatus != 200) {
-            callback(gameStatus, gameBody);
-            return;
-          }
+    if (!group) {
+      callback(404, {
+        'message': 'Group ' + displayName + ' not found.',
+      });
 
-          game = gameBody.game;
-          Group.findOneAndUpdate({
-            name: displayName,
-          }, {
-            $pull: {
-              users: user._id,
-            },
-          }, {
-            new: true,
-          }).exec(function(err, group) {
-            if (err) {
-              callback(500, {
-                'message': err,
-              });
+      return;
+    }
 
-              return;
-            }
-
-            callback(200, {
-              'group': group,
-            });
-          });
-        });
+    callback(200, {
+      'group': group,
+      'message': name + ' removed from group ' + displayName,
+    });
   });
 }
 
