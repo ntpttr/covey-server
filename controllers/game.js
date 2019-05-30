@@ -14,49 +14,6 @@ const bggOptions = {
 const bgg = require('bgg')(bggOptions);
 
 /**
- * Gets list of games from the database.
- * @param {schema} Game - The game mongoose schema.
- * @param {function} callback - The callback function.
- */
-function listGames(Game, callback) {
-  Game.find({}, function(err, games) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else {
-      callback(200, {
-        'games': games,
-      });
-    }
-  });
-}
-
-/**
- * Get a specific game using its name.
- * @param {schema} Game - The game mongoose schema.
- * @param {string} name - The name of the game.
- * @param {function} callback - The callback function.
- */
-function getGame(Game, name, callback) {
-  Game.findOne({name: name.toLowerCase()}, function(err, game) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else if (game) {
-      callback(200, {
-        'game': game,
-      });
-    } else {
-      callback(404, {
-        'message': 'Game ' + name + ' not found in the database.',
-      });
-    }
-  });
-}
-
-/**
  * Save a game to the database.
  * @param {Game} Game - The game mongoose schema.
  * @param {object} properties - The game properties.
@@ -117,7 +74,7 @@ function deleteGame(Game, name, callback) {
  */
 function getGameBgg(name, callback) {
   // TODO(ntpttr): Add error handling if bgg can't connect.
-  searchGameBgg(name, function(searchStatus, searchBody) {
+  searchGameBggExactMatch(name, function(searchStatus, searchBody) {
     if (searchStatus != 200) {
       callback(searchStatus, searchBody);
     }
@@ -186,6 +143,29 @@ function searchGameBgg(name, callback) {
     bgg('search', {
       query: name,
       type: 'boardgame',
+      showcount: 10,
+    }).then(function(results) {
+      callback(200, results);
+    });
+  } catch (err) {
+    callback(500, {
+      'message': err,
+    });
+  }
+}
+
+/**
+ * Search for a game by name using the BoardGameGeek API,
+ * only returning an exact match.
+ * @param {string} name - The name of the game.
+ * @param {function} callback - The callback function.
+ */
+function searchGameBggExactMatch(name, callback) {
+  try {
+    bgg('search', {
+      query: name,
+      type: 'boardgame',
+      exact: 1,
     }).then(function(results) {
       callback(200, results);
     });
@@ -197,8 +177,6 @@ function searchGameBgg(name, callback) {
 }
 
 module.exports = {
-  listGames,
-  getGame,
   saveGame,
   deleteGame,
   getGameBgg,

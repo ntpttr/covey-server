@@ -3,37 +3,24 @@
 const express = require('express');
 const router = new express.Router();
 
-// List all games in the DB
-router.get('/', function(req, res) {
-  const Game = req.Game;
-  const gameController = req.gameController;
-
-  gameController.listGames(Game, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
-// Get specific game from the DB
+// Get game by name from BoardGameGeek's API
 router.get('/:name', function(req, res) {
-  const Game = req.Game;
-  const gameController = req.gameController;
-  const name = req.params.name;
-
-  gameController.getGame(Game, name, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
-// Get specific game from BoardGameGeek's API
-router.get('/bgg/:name', function(req, res) {
   const gameController = req.gameController;
   const name = req.params.name;
 
   gameController.getGameBgg(name, function(status, body) {
     res.status(status);
     res.json(body);
+  });
+});
+
+// Search bgg for a game
+router.get('/search/:name', function(req, res) {
+  const gameController = req.gameController;
+  const name = req.params.name;
+
+  gameController.searchGameBgg(name, function(status, body) {
+    res.status(status).json(body);
   });
 });
 
@@ -49,22 +36,10 @@ router.post('/', function(req, res) {
   });
 });
 
-// Save bgg game details to database
-router.post('/bgg', function(req, res) {
-  const Game = req.Game;
-  const gameController = req.gameController;
-  const name = req.body.name;
-
-  gameController.saveBggGame(Game, name, function(status, body) {
-    res.status(status);
-    res.json(body);
-  });
-});
-
 // Search bgg for a game
-router.get('/bgg/search', function(req, res) {
+router.get('/bggSearch/:name', function(req, res) {
   const gameController = req.gameController;
-  const name = req.body.name;
+  const name = req.params.name;
 
   gameController.searchGameBgg(name, function(status, body) {
     res.status(status).json(body);
