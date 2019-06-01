@@ -82,7 +82,11 @@ router.put('/', auth.required, function(req, res) {
       username,
       properties,
       function(status, body) {
-        res.status(status).json({'user': body.user.toProfileJSON()});
+        if (status != 200) {
+          res.status(status).json(body);
+        } else {
+          res.status(status).json({'user': body.user.toProfileJSON()});
+        }
       });
 });
 
