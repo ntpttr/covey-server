@@ -24,7 +24,6 @@ router.use('/user', function(req, res, next) {
 router.use('/groups', function(req, res, next) {
   req.Group = Group;
   req.User = User;
-  req.Game = Game;
   req.groupController = groupController;
   req.userController = userController;
   req.gameController = gameController;
@@ -32,7 +31,6 @@ router.use('/groups', function(req, res, next) {
 }, require('./group'));
 
 router.use('/games', function(req, res, next) {
-  req.Game = Game;
   req.gameController = gameController;
   next();
 }, require('./game'));
