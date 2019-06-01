@@ -6,7 +6,6 @@ const router = new express.Router();
 // Define schema variables
 const User = require('../../models/User');
 const Group = require('../../models/Group');
-const Game = require('../../models/Game');
 const Play = require('../../models/Play');
 
 // Define controller variables
