@@ -23,7 +23,6 @@ router.post('/login', function(req, res, next) {
 router.post('/', function(req, res) {
   const User = req.User;
   const userController = req.userController;
-
   const properties = req.body;
 
   userController.createUser(User, properties, function(status, body) {
@@ -41,12 +40,11 @@ router.post('/', function(req, res) {
 router.get('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
-
   const payload = req.payload;
 
   userController.getUser(User, payload.username, function(status, body) {
     if (status != 200) {
-      res.status(status).json({});
+      res.status(status).json(body);
     } else {
       res.status(status).json({'user': body.user.toProfileJSON()});
     }
@@ -57,12 +55,11 @@ router.get('/', auth.required, function(req, res) {
 router.get('/:username', function(req, res) {
   const User = req.User;
   const userController = req.userController;
-
   const username = req.params.username;
 
   userController.getUser(User, username, function(status, body) {
     if (status != 200) {
-      res.status(status).json({});
+      res.status(status).json(body);
     } else {
       res.status(status).json({'user': body.user.toProfileJSON()});
     }
@@ -73,7 +70,6 @@ router.get('/:username', function(req, res) {
 router.put('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
-
   const properties = req.body;
   const username = req.payload.username;
 
@@ -95,7 +91,6 @@ router.delete('/', auth.required, function(req, res) {
   const User = req.User;
   const Group = req.Group;
   const userController = req.userController;
-
   const username = req.payload.username;
 
   userController.deleteUser(

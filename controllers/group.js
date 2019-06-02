@@ -24,25 +24,6 @@ function createGroup(Group, properties, callback) {
 }
 
 /**
- * List all groups.
- * @param {schema} Group - The group mongoose schema.
- * @param {function} callback - The callback function.
- */
-function listGroups(Group, callback) {
-  Group.find({}, function(err, groups) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else {
-      callback(200, {
-        'groups': groups,
-      });
-    }
-  });
-}
-
-/**
  * Get groups with a specific name from the database.
  * @param {schema} Group - The group mongoose schema.
  * @param {string} displayName - The group name.
@@ -131,7 +112,7 @@ function addUser(Group, User, userController, displayName, username, callback) {
 
       if (group == null) {
         callback(404, {
-          'message': 'Group ' + displayName + ' not found.'
+          'message': 'Group ' + displayName + ' not found.',
         });
 
         return;
@@ -192,7 +173,7 @@ function deleteUser(
 
       if (group == null) {
         callback(404, {
-          'message': 'Group ' + displayName + ' not found.'
+          'message': 'Group ' + displayName + ' not found.',
         });
 
         return;
@@ -272,7 +253,8 @@ function addGame(Group, displayName, gameProperties, callback) {
 
     if (!group) {
       callback(404, {
-        'message': 'Group ' + displayName + ' doesn\'t exist or already contains ' + name + '.',
+        'message': 'Group ' + displayName +
+        ' doesn\'t exist or already contains ' + name + '.',
       });
 
       return;
@@ -376,7 +358,6 @@ function deleteGroup(Group, User, groupName, callback) {
 }
 
 module.exports = {
-  listGroups,
   getGroup,
   createGroup,
   updateGroup,

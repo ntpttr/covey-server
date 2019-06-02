@@ -18,13 +18,7 @@ router.post('/', function(req, res) {
       groupName,
       players,
       function(status, body) {
-        if (status != 201) {
-          res.status(status).json(body);
-        } else {
-          res.status(status).json({
-            'play': body.play,
-          });
-        }
+        res.status(status).json(body);
       });
 });
 

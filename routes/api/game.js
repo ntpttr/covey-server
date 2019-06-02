@@ -9,8 +9,7 @@ router.get('/:name', function(req, res) {
   const name = req.params.name;
 
   gameController.getGameBgg(name, function(status, body) {
-    res.status(status);
-    res.json(body);
+    res.status(status).json(body);
   });
 });
 

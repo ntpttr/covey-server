@@ -59,7 +59,7 @@ function getGroupPlays(Play, groupName, callback) {
  */
 function getUserPlays(Play, username, callback) {
   // TODO: Figure out checking if username is in list of players when querying
-  Play.find({user: groupName}, function(err, plays) {
+  Play.find({user: username}, function(err, plays) {
     if (err) {
       callback(500, {
         'error': err,

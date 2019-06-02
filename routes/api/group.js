@@ -9,8 +9,7 @@ router.get('/', function(req, res) {
   const groupController = req.groupController;
 
   groupController.listGroups(Group, function(status, body) {
-    res.status(status);
-    res.json(body);
+    res.status(status).json(body);
   });
 });
 
@@ -22,8 +21,7 @@ router.get('/:name', function(req, res) {
   const name = req.params.name;
 
   groupController.getGroup(Group, name, function(status, body) {
-    res.status(status);
-    res.json(body);
+    res.status(status).json(body);
   });
 });
 
@@ -35,8 +33,7 @@ router.post('/', function(req, res) {
   const properties = req.body;
 
   groupController.createGroup(Group, properties, function(status, body) {
-    res.status(status);
-    res.json(body);
+    res.status(status).json(body);
   });
 });
 
@@ -53,8 +50,7 @@ router.put('/:name', function(req, res) {
       name,
       properties,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
@@ -71,8 +67,7 @@ router.delete('/:name', function(req, res) {
       User,
       name,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
@@ -93,8 +88,7 @@ router.post('/:groupName/users', function(req, res) {
       groupName,
       username,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
@@ -115,8 +109,7 @@ router.delete('/:groupName/users', function(req, res) {
       groupName,
       username,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
@@ -133,8 +126,7 @@ router.post('/:groupName/games', function(req, res, next) {
       groupName,
       gameProperties,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 
@@ -151,8 +143,7 @@ router.delete('/:groupName/games', function(req, res) {
       groupName,
       gameName,
       function(status, body) {
-        res.status(status);
-        res.json(body);
+        res.status(status).json(body);
       });
 });
 

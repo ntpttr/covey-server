@@ -27,6 +27,7 @@ function authenticate(creds, callback) {
       callback(500, {
         'message': err,
       });
+
       return;
     }
 
@@ -49,8 +50,22 @@ function authenticate(creds, callback) {
 function createUser(User, properties, callback) {
   user = new User();
 
-  user.username = properties.username;
-  user.setPassword(properties.password);
+  const {username, password} = properties;
+
+  if (!username) {
+    callback(400, {
+      'message': 'Must provide username',
+    });
+  }
+
+  if (!password) {
+    callback(400, {
+      'message': 'Must provide password',
+    });
+  }
+
+  user.username = username;
+  user.setPassword(password);
 
   user.save(function(err) {
     if (err) {

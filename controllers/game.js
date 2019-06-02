@@ -24,19 +24,28 @@ function getGameBgg(name, callback) {
     if (searchStatus != 200) {
       callback(searchStatus, searchBody);
     }
+
+    // We're looking for an exact match, so if there isn't one result in the
+    // response we didn't find it.
     if (searchBody.items.total != 1) {
       callback(404, {
         'message': 'Game ' + name + ' not found!',
       });
+
       return;
     }
+
+    // The first call got us the game ID, now we make a call to get details
+    // using that ID.
     const id = searchBody.items.item.id;
     getGameByIdBgg(id, function(getStatus, getBody) {
       if (getStatus != 200) {
         callback(getStatus, getBody);
       }
+
       const item = getBody.items.item;
       let name;
+
       // Get primary name from list of possible alternates
       for (i=0; i<item.name.length; i++) {
         if (item.name[i].type == 'primary') {
@@ -44,6 +53,7 @@ function getGameBgg(name, callback) {
           break;
         }
       }
+
       gameDetail = {
         'name': name,
         'description': item.description,
@@ -53,6 +63,7 @@ function getGameBgg(name, callback) {
         'maxPlayers': item.maxplayers.value,
         'playingTime': item.playingtime.value,
       };
+
       callback(200, {
         'game': gameDetail,
       });
