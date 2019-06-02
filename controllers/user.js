@@ -75,46 +75,29 @@ function createUser(User, properties, callback) {
 }
 
 /**
- * List users in the database.
- * @param {schema} User - The user mongoose schema.
- * @param {function} callback - The callback function.
- */
-function listUsers(User, callback) {
-  User.find({}, function(err, users) {
-    if (err) {
-      callback(500, {
-        'message': err,
-      });
-    } else {
-      callback(200, {
-        'users': users,
-      });
-    }
-  });
-}
-
-/**
  * Get a user based on its name.
  * @param {schema} User - The user mongoose schema.
  * @param {string} username - The username.
  * @param {function} callback - The callback function.
  */
 function getUser(User, username, callback) {
-  User.findOne({username: username}, function(err, user) {
-    if (err) {
-      callback(500, {
-        'message': err,
+  User.findOne({username: username}).
+      populate('groups').
+      exec(function(err, user) {
+        if (err) {
+          callback(500, {
+            'message': err,
+          });
+        } else if (user) {
+          callback(200, {
+            'user': user,
+          });
+        } else {
+          callback(404, {
+            'message': 'user not found',
+          });
+        }
       });
-    } else if (user) {
-      callback(200, {
-        'user': user,
-      });
-    } else {
-      callback(404, {
-        'message': 'user not found',
-      });
-    }
-  });
 }
 
 /**
@@ -276,7 +259,6 @@ function deleteUser(User, Group, username, callback) {
 
 module.exports = {
   authenticate,
-  listUsers,
   getUser,
   createUser,
   updateUser,
