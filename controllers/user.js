@@ -120,23 +120,45 @@ function getUser(User, username, callback) {
 /**
  * Update an existing user.
  * @param {schema} User - The user mongoose schema.
- * @param {string} username - The username.
+ * @param {string} name - The user name.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(User, username, properties, callback) {
-  getUser(User, username, function(status, body) {
+function updateUser(User, name, properties, callback) {
+  const {username, image, password} = properties;
+
+  if (!username && !image && !password) {
+    callback(400, {
+      'message': 'Must provide username, image, or password to update.',
+    });
+
+    return;
+  }
+
+  getUser(User, name, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
     }
 
     user = body.user;
+
+    if (password) {
+      user.setPassword(password);
+    }
+
     Object.assign(user, properties).save((err, user) => {
       if (err) {
-        callback(500, {
-          'message': err,
-        });
+        if (err.code === 11000) {
+          // Duplicate username found
+          callback(409, {
+            'message': 'username already exists',
+          });
+        } else {
+          callback(500, {
+            'message': err,
+          });
+        }
       } else {
         callback(200, {
           'user': user,
