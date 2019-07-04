@@ -19,34 +19,66 @@ router.post('/login', function(req, res, next) {
   });
 });
 
+// Confirm user account
+router.get('/confirm/:token', function(req, res) {
+  const User = req.User;
+  const ValidationKey = req.ValidationKey;
+  const userController = req.userController;
+  const token = req.params.token;
+
+  userController.confirmUser(
+      User, ValidationKey, token, function(status, body) {
+        res.status(status).json(body);
+      });
+});
+
+// Resend a user confirmation email
+router.post('/resend/:username', function(req, res) {
+  const User = req.User;
+  const ValidationKey = req.ValidationKey;
+  const userController = req.userController;
+  const username = req.params.username;
+  const host = req.headers.host;
+
+  userController.resendConfirmation(
+      User, ValidationKey, username, host, function(status, body) {
+        res.status(status).json(body);
+      });
+});
+
 // Create new user
 router.post('/', function(req, res) {
   const User = req.User;
+  const ValidationKey = req.ValidationKey;
   const userController = req.userController;
   const properties = req.body;
+  const host = req.headers.host;
 
-  userController.createUser(User, properties, function(status, body) {
-    if (status != 201) {
-      res.status(status).json(body);
-    } else {
-      res.status(status).json({
-        'user': body.user.toAuthJSON(),
+  userController.createUser(
+      User, ValidationKey, properties, host, function(status, body) {
+        if (status != 201) {
+          res.status(status).json(body);
+        } else {
+          res.status(status).json({
+            'user': body.user.toAuthJSON(),
+          });
+        }
       });
-    }
-  });
 });
 
 // Get current logged in user
 router.get('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
-  const payload = req.payload;
+  const username = req.payload.username;
 
-  userController.getUser(User, payload.username, function(status, body) {
+  userController.getUserDetails(User, username, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
-      res.status(status).json({'user': body.user.toProfileJSON()});
+      res.status(status).json({
+        'user': body.user.toProfileJSON(),
+      });
     }
   });
 });
@@ -57,7 +89,7 @@ router.get('/:username', function(req, res) {
   const userController = req.userController;
   const username = req.params.username;
 
-  userController.getUser(User, username, function(status, body) {
+  userController.getUserDetails(User, username, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
@@ -67,7 +99,7 @@ router.get('/:username', function(req, res) {
 });
 
 // Update an existing user
-router.put('/', auth.required, function(req, res) {
+router.patch('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
   const properties = req.body;

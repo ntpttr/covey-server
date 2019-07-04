@@ -18,7 +18,7 @@ function addPlay(Play, gameName, groupName, players, callback) {
   play.save(function(err) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
       return;
     }
@@ -84,7 +84,7 @@ function deletePlay(Play, id, callback) {
   Play.findByIdAndRemove(id, function(err, play) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
     } else if (play) {
       callback(200, {

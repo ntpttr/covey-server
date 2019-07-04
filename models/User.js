@@ -7,19 +7,25 @@ const jwt = require('jsonwebtoken');
 const secret = require('../config').secret;
 
 const UserSchema = new mongoose.Schema({
-  username: {
+  email: {
     type: String,
-    lowercase: true,
     unique: true,
     required: [true, 'can\'t be blank'],
+  },
+  username: {
+    type: String,
+    required: [true, 'can\'t be blank'],
+    unique: true,
     match: [/^[a-zA-Z0-9]+$/, 'is invalid'],
-    index: true,
   },
   groups: [{type: mongoose.Schema.Types.ObjectId, ref: 'Group'}],
   games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
   image: String,
   hash: String,
   salt: String,
+  isVerified: {type: Boolean, default: false},
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 }, {timestamps: true});
 
 UserSchema.methods.validPassword = function(password) {
@@ -55,12 +61,15 @@ UserSchema.methods.generateJWT = function() {
 UserSchema.methods.toAuthJSON = function() {
   return {
     username: this.username,
+    email: this.email,
+    image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
     token: this.generateJWT(),
   };
 };
 
 UserSchema.methods.toProfileJSON = function() {
   return {
+    email: this.email,
     username: this.username,
     groups: this.groups,
     image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',

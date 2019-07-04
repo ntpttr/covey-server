@@ -1,5 +1,5 @@
 {
-  "name": "Covey",
+  "name": "covey",
   "version": "0.1.0",
   "description": "Application for groups playing tabletop games together.",
   "main": "app.js",
@@ -23,9 +23,11 @@
   },
   "homepage": "https://github.com/ntpttr/Covey#readme",
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
     "bcrypt": "^2.0.1",
     "bgg": "^1.0.1",
     "body-parser": "^1.18.3",
+    "dotenv": "^8.0.0",
     "eslint-plugin-react": "^7.12.4",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
@@ -36,15 +38,18 @@
     "mongoose": "^5.4.11",
     "mongoose-unique-validator": "^2.0.2",
     "morgan": "^1.9.1",
+    "normalize-email": "^1.1.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "sanitize": "^2.1.0",
     "sinon": "^7.2.3",
     "styled-jsx": "^2.2.7",
-    "supertest": "^3.4.2"
+    "supertest": "^3.4.2",
+    "validator": "^11.0.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.13.0",
+    "eslint": "^5.16.0",
     "eslint-config-google": "^0.11.0",
     "mocha": "^5.2.0"
   }

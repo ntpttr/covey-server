@@ -85,7 +85,7 @@ function getGameByIdBgg(id, callback) {
     });
   } catch (err) {
     callback(500, {
-      'message': err,
+      'error': err,
     });
   }
 }
@@ -106,7 +106,7 @@ function searchGameBgg(name, callback) {
     });
   } catch (err) {
     callback(500, {
-      'message': err,
+      'error': err,
     });
   }
 }
@@ -128,7 +128,7 @@ function searchGameBggExactMatch(name, callback) {
     });
   } catch (err) {
     callback(500, {
-      'message': err,
+      'error': err,
     });
   }
 }
