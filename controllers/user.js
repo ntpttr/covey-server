@@ -221,7 +221,17 @@ function createUser(User, ValidationKey, properties, host, callback) {
       }
     }
 
-    sendConfirmationEmail(ValidationKey, user, host, callback);
+    sendConfirmationEmail(ValidationKey, user, host, function(sendStatus, sendBody) {
+      if (sendStatus != 200) {
+        callback(200, {
+          'message': 'User created but system failed to send confirmation email. Try again later.',
+        });
+
+        return;
+      }
+
+      callback(sendStatus, sendBody);
+    });
   });
 }
 
@@ -424,7 +434,7 @@ function sendConfirmationEmail(ValidationKey, user, host, callback) {
   validationKey.save(function(err) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
 
       return;
