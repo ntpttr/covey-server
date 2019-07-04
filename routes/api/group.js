@@ -38,7 +38,7 @@ router.post('/', function(req, res) {
 });
 
 // Update an existing group
-router.put('/:name', function(req, res) {
+router.patch('/:name', function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
@@ -79,7 +79,7 @@ router.post('/:groupName/users', function(req, res) {
   const userController = req.userController;
 
   const groupName = req.params.groupName;
-  const username = req.body.user;
+  const username = req.body.username;
 
   groupController.addUser(
       Group,
@@ -100,7 +100,7 @@ router.delete('/:groupName/users', function(req, res) {
   const userController = req.userController;
 
   const groupName = req.params.groupName;
-  const username = req.body.user;
+  const username = req.body.username;
 
   groupController.deleteUser(
       Group,

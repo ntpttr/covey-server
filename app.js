@@ -2,6 +2,7 @@
 
 // Define required modules
 const config = require('./config');
+const dotenv = require('dotenv');
 const express = require('express');
 const session = require('express-session');
 const bodyParser =require('body-parser');
@@ -9,6 +10,7 @@ const mongoose = require('mongoose');
 
 // TODO(ntpttr): If we end up with a production mongodb somehow
 // update this url from development to production.
+dotenv.config();
 const url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
 const testing = module.parent == null ?
@@ -17,6 +19,7 @@ const testing = module.parent == null ?
 // Create global app object.
 const app = express();
 app.use(require('morgan')('dev'));
+app.use(require('sanitize').middleware);
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
@@ -38,9 +41,14 @@ app.use(session({
 }));
 
 if (!testing) {
-  mongoose.connect(url, {useNewUrlParser: true}, function(err) {
-    if (err) throw err;
-  });
+  mongoose.connect(
+      url,
+      {
+        useNewUrlParser: true,
+        useCreateIndex: true,
+      }, function(err) {
+        if (err) throw err;
+      });
 }
 
 require('./config/passport');

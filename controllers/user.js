@@ -1,6 +1,9 @@
 // server/controllers/userController.js
 
+const crypto = require('crypto');
 const passport = require('passport');
+const sgMail = require('@sendgrid/mail');
+const validator = require('validator');
 
 /**
  * Authenticate a user based on credentials.
@@ -12,6 +15,7 @@ function authenticate(creds, callback) {
     callback(422, {
       'message': 'username is empty',
     });
+
     return;
   }
 
@@ -19,38 +23,166 @@ function authenticate(creds, callback) {
     callback(422, {
       'message': 'password is empty',
     });
+
     return;
   }
 
   passport.authenticate('local', {session: false}, function(err, user, info) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
 
       return;
     }
 
     if (user) {
+      if (!user.isVerified) {
+        callback(401, {
+          'message': 'Your account has not been verified.',
+        });
+
+        return;
+      }
+
       callback(200, {
         'user': user,
       });
     } else {
-      callback(400, info);
+      callback(401, info);
     }
   })(creds, callback);
 };
 
 /**
- * Create a new user.
+ * Confirm a user account
  * @param {schema} User - The user mongoose schema.
- * @param {object} properties - The user properties.
+ * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {string} token - The confirmation token.
  * @param {function} callback - The callback function.
  */
-function createUser(User, properties, callback) {
-  user = new User();
+function confirmUser(User, ValidationKey, token, callback) {
+  ValidationKey.findOne({token: token}, function(err, key) {
+    if (err) {
+      callback(500, {
+        'error': err,
+      });
 
-  const {username, password} = properties;
+      return;
+    }
+
+    if (!key) {
+      callback(400, {
+        'message': 'Unable to find a valid token. Your token may have expired.',
+      });
+
+      return;
+    }
+
+    User.findOne({_id: key.userId}, function(err, user) {
+      if (err) {
+        callback(500, {
+          'message': err,
+        });
+
+        return;
+      }
+
+      if (!user) {
+        callback(400, {
+          'message': 'Unable to find a user that corresponds to this token.',
+        });
+
+        return;
+      }
+
+      if (user.isVerified) {
+        callback(400, {
+          'message': 'This user has already been verified',
+        });
+
+        return;
+      }
+
+      user.isVerified = true;
+      user.save(function(err) {
+        if (err) {
+          callback(500, {
+            'error': err,
+          });
+
+          return;
+        }
+
+        callback(200, {
+          'message': 'The account has been verified. Please log in.',
+        });
+      });
+    });
+  });
+}
+
+/**
+ * Resend a confirmation email to a given user.
+ * @param {schema} User - The user mongoose schema.
+ * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {string} username - The username to resend the validation email to.
+ * @param {string} host = The host for the email verification URL.
+ * @param {function} callback - The callback function.
+ */
+function resendConfirmation(User, ValidationKey, username, host, callback) {
+  User.findOne({username: username}, function(err, user) {
+    if (err) {
+      callback(500, {
+        'error': err,
+      });
+
+      return;
+    }
+
+    if (!user) {
+      callback(404, {
+        'message': 'User ' + username + ' not found.',
+      });
+
+      return;
+    }
+
+    if (user.isVerified) {
+      callback(400, {
+        'message': 'User ' + username + ' has already been verified.',
+      });
+
+      return;
+    }
+
+    sendConfirmationEmail(ValidationKey, user, host, callback);
+  });
+}
+
+/**
+ * Create a new user.
+ * @param {schema} User - The user mongoose schema.
+ * @param {schema} ValidationKey = The validation key mongoose schema.
+ * @param {object} properties - The user properties.
+ * @param {string} host = The host for the email verification URL.
+ * @param {function} callback - The callback function.
+ */
+function createUser(User, ValidationKey, properties, host, callback) {
+  const {email, username, password} = properties;
+
+  if (!email) {
+    callback(400, {
+      'message': 'Must provide email',
+    });
+  }
+
+  if (!validator.isEmail(email)) {
+    callback(422, {
+      'message': 'email is not valid',
+    });
+    return;
+  }
 
   if (!username) {
     callback(400, {
@@ -64,44 +196,48 @@ function createUser(User, properties, callback) {
     });
   }
 
-  user.username = username;
+  const user = new User({
+    email: email,
+    username: username,
+  });
+
   user.setPassword(password);
 
   user.save(function(err) {
     if (err) {
       if (err.code === 11000) {
-        // Duplicate username found
+        // Duplicate user found
         callback(409, {
-          'message': 'username already exists',
+          'message': 'user already exists',
         });
+
         return;
       } else {
         callback(500, {
-          'message': err,
+          'error': err,
         });
+
         return;
       }
     }
 
-    callback(201, {
-      'user': user,
-    });
+    sendConfirmationEmail(ValidationKey, user, host, callback);
   });
 }
 
 /**
  * Get a user based on its name.
  * @param {schema} User - The user mongoose schema.
- * @param {string} username - The username.
+ * @param {string} username - The username to get.
  * @param {function} callback - The callback function.
  */
-function getUser(User, username, callback) {
+function getUserDetails(User, username, callback) {
   User.findOne({username: username}).
       populate('groups').
       exec(function(err, user) {
         if (err) {
           callback(500, {
-            'message': err,
+            'error': err,
           });
         } else if (user) {
           callback(200, {
@@ -118,14 +254,12 @@ function getUser(User, username, callback) {
 /**
  * Update an existing user.
  * @param {schema} User - The user mongoose schema.
- * @param {string} name - The user name.
+ * @param {string} username - The name of the user to update.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(User, name, properties, callback) {
-  const {username, image, password} = properties;
-
-  if (!username && !image && !password) {
+function updateUser(User, username, properties, callback) {
+  if (!properties.username && !properties.image && !properties.password) {
     callback(400, {
       'message': 'Must provide username, image, or password to update.',
     });
@@ -133,7 +267,7 @@ function updateUser(User, name, properties, callback) {
     return;
   }
 
-  getUser(User, name, function(status, body) {
+  getUserDetails(User, username, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
@@ -141,20 +275,20 @@ function updateUser(User, name, properties, callback) {
 
     user = body.user;
 
-    if (password) {
-      user.setPassword(password);
+    if (properties.password) {
+      user.setPassword(properties.password);
     }
 
     Object.assign(user, properties).save((err, user) => {
       if (err) {
         if (err.code === 11000) {
-          // Duplicate username found
+          // Duplicate user found
           callback(409, {
-            'message': 'username already exists',
+            'message': 'user already exists',
           });
         } else {
           callback(500, {
-            'message': err,
+            'error': err,
           });
         }
       } else {
@@ -169,8 +303,8 @@ function updateUser(User, name, properties, callback) {
 /**
  * Add a reference to a group
  * @param {schema} User - The user mongoose schema
- * @param {string} username - The username.
- * @param {string} groupId - The group mongoose Id.
+ * @param {string} username - The username of the user to update.
+ * @param {string} groupId - The group Id to add.
  * @param {function} callback - The callback function.
  */
 function addGroupLink(User, username, groupId, callback) {
@@ -185,7 +319,7 @@ function addGroupLink(User, username, groupId, callback) {
   }).exec(function(err, user) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
     } else {
       callback(200, {
@@ -198,7 +332,7 @@ function addGroupLink(User, username, groupId, callback) {
 /**
  * Remove a reference to a group
  * @param {schema} User - The user mongoose schema
- * @param {string} username - The username.
+ * @param {string} username - The username of the user to update.
  * @param {string} groupId - The group mongoose Id.
  * @param {function} callback - The callback function.
  */
@@ -214,7 +348,7 @@ function removeGroupLink(User, username, groupId, callback) {
   }).exec(function(err, user) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
     } else {
       callback(200, {
@@ -228,7 +362,7 @@ function removeGroupLink(User, username, groupId, callback) {
  * Delete a user.
  * @param {schema} User - The user mongoose schema.
  * @param {schema} Group - The group mongoose schema.
- * @param {string} username - The username.
+ * @param {string} username - The username of the user to delete.
  * @param {function} callback - The callback function.
  */
 function deleteUser(User, Group, username, callback) {
@@ -272,9 +406,63 @@ function deleteUser(User, Group, username, callback) {
   });
 }
 
+/**
+ * Send a validation email to a user.
+ * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {Object} user - The user to send the validation email to.
+ * @param {string} host = The host for the email verification URL.
+ * @param {function} callback - The callback function.
+ */
+function sendConfirmationEmail(ValidationKey, user, host, callback) {
+  // Create a validation key for this user
+  const validationKey = new ValidationKey({
+    userId: user._id,
+    token: crypto.randomBytes(16).toString('hex'),
+  });
+
+  // Save the verification token
+  validationKey.save(function(err) {
+    if (err) {
+      callback(500, {
+        'message': err,
+      });
+
+      return;
+    }
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const msg = {
+      to: user.email,
+      from: 'no-reply@coveyapp.com',
+      subject: 'Account Verification Token',
+      text: 'Hi ' + user.username + ',\n\n' + 'Verify your ' +
+            'Covey account by clicking this link:' +
+            '\nhttp:\/\/' + host + '\/user\/confirm\/' +
+            validationKey.token + '.\n',
+    };
+
+    sgMail.send(msg, function(err) {
+      if (err) {
+        callback(500, {
+          'error': err,
+        });
+
+        return;
+      }
+
+      callback(200, {
+        'message': 'Confirmation email sent to ' + user.email,
+      });
+    });
+  });
+}
+
 module.exports = {
   authenticate,
-  getUser,
+  confirmUser,
+  resendConfirmation,
+  getUserDetails,
   createUser,
   updateUser,
   addGroupLink,

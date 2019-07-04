@@ -12,7 +12,7 @@ function createGroup(Group, properties, callback) {
   group.save(function(err) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
       return;
     }
@@ -33,7 +33,7 @@ function getGroup(Group, displayName, callback) {
   Group.findOne({name: displayName}, function(err, group) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
     } else if (group) {
       callback(200, {
@@ -65,7 +65,7 @@ function updateGroup(Group, name, properties, callback) {
     Object.assign(group, properties).save((err, group) => {
       if (err) {
         callback(500, {
-          'message': err,
+          'error': err,
         });
       } else {
         callback(200, {
@@ -82,58 +82,60 @@ function updateGroup(Group, name, properties, callback) {
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - the user controller object.
  * @param {string} displayName - The group name.
- * @param {string} username - The username.
+ * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(Group, User, userController, displayName, username, callback) {
-  userController.getUser(User, username, function(userStatus, userBody) {
-    if (userStatus != 200) {
-      callback({userStatus, userBody});
-      return;
-    }
+function addUser(
+    Group, User, userController, displayName, username, callback) {
+  userController.getUserDetails(
+      User, username, function(userStatus, userBody) {
+        if (userStatus != 200) {
+          callback({userStatus, userBody});
+          return;
+        }
 
-    user = userBody.user;
-    Group.findOneAndUpdate({
-      name: displayName,
-    }, {
-      $addToSet: {
-        users: user._id,
-      },
-    }, {
-      new: true,
-    }).exec(function(err, group) {
-      if (err) {
-        callback(500, {
-          'message': err,
-        });
-
-        return;
-      }
-
-      if (group == null) {
-        callback(404, {
-          'message': 'Group ' + displayName + ' not found.',
-        });
-
-        return;
-      }
-
-      userController.addGroupLink(
-          User, user.username, group._id, function(addStatus, addBody) {
-            if (addStatus != 200) {
-              callback(addStatus, addBody);
-              return;
-            }
-
-            callback(200, {
-              'group': group,
-              'user': addBody.user.toProfileJSON(),
-              'message': 'User ' + username +
-              ' added to group ' + displayName + '.',
+        user = userBody.user;
+        Group.findOneAndUpdate({
+          name: displayName,
+        }, {
+          $addToSet: {
+            users: user._id,
+          },
+        }, {
+          new: true,
+        }).exec(function(err, group) {
+          if (err) {
+            callback(500, {
+              'error': err,
             });
-          });
-    });
-  });
+
+            return;
+          }
+
+          if (group == null) {
+            callback(404, {
+              'message': 'Group ' + displayName + ' not found.',
+            });
+
+            return;
+          }
+
+          userController.addGroupLink(
+              User, user.username, group._id, function(addStatus, addBody) {
+                if (addStatus != 200) {
+                  callback(addStatus, addBody);
+                  return;
+                }
+
+                callback(200, {
+                  'group': group,
+                  'user': addBody.user.toProfileJSON(),
+                  'message': 'User ' + username +
+                  ' added to group ' + displayName + '.',
+                });
+              });
+        });
+      });
 }
 
 /**
@@ -142,7 +144,7 @@ function addUser(Group, User, userController, displayName, username, callback) {
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - The user controller object.
  * @param {string} displayName - The group name.
- * @param {string} username - The username.
+ * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
 function deleteUser(
@@ -165,7 +167,7 @@ function deleteUser(
     }).exec(function(err, group) {
       if (err) {
         callback(500, {
-          'message': err,
+          'error': err,
         });
 
         return;
@@ -245,7 +247,7 @@ function addGame(Group, displayName, gameProperties, callback) {
   }).exec(function(err, group) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
 
       return;
@@ -288,7 +290,7 @@ function deleteGame(Group, displayName, gameName, callback) {
   }).exec(function(err, group) {
     if (err) {
       callback(500, {
-        'message': err,
+        'error': err,
       });
 
       return;

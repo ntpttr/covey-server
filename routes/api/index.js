@@ -7,6 +7,7 @@ const router = new express.Router();
 const User = require('../../models/User');
 const Group = require('../../models/Group');
 const Play = require('../../models/Play');
+const ValidationKey = require('../../models/ValidationKey');
 
 // Define controller variables
 const userController = require('../../controllers/user');
@@ -17,6 +18,7 @@ const playController = require('../../controllers/play');
 router.use('/user', function(req, res, next) {
   req.User = User;
   req.Group = Group;
+  req.ValidationKey = ValidationKey;
   req.userController = userController;
   next();
 }, require('./user'));
