@@ -85,57 +85,55 @@ function updateGroup(Group, name, properties, callback) {
  * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(
-    Group, User, userController, displayName, username, callback) {
-  userController.getUserDetails(
-      User, username, function(userStatus, userBody) {
-        if (userStatus != 200) {
-          callback({userStatus, userBody});
-          return;
-        }
+function addUser(Group, User, userController, displayName, username, callback) {
+  userController.getUserDetails(User, username, function(userStatus, userBody) {
+    if (userStatus != 200) {
+      callback(userStatus, userBody);
+      return;
+    }
 
-        user = userBody.user;
-        Group.findOneAndUpdate({
-          name: displayName,
-        }, {
-          $addToSet: {
-            users: user._id,
-          },
-        }, {
-          new: true,
-        }).exec(function(err, group) {
-          if (err) {
-            callback(500, {
-              'error': err,
-            });
-
-            return;
-          }
-
-          if (group == null) {
-            callback(404, {
-              'message': 'Group ' + displayName + ' not found.',
-            });
-
-            return;
-          }
-
-          userController.addGroupLink(
-              User, user.username, group._id, function(addStatus, addBody) {
-                if (addStatus != 200) {
-                  callback(addStatus, addBody);
-                  return;
-                }
-
-                callback(200, {
-                  'group': group,
-                  'user': addBody.user.toProfileJSON(),
-                  'message': 'User ' + username +
-                  ' added to group ' + displayName + '.',
-                });
-              });
+    user = userBody.user;
+    Group.findOneAndUpdate({
+      name: displayName,
+    }, {
+      $addToSet: {
+        users: user._id,
+      },
+    }, {
+      new: true,
+    }).exec(function(err, group) {
+      if (err) {
+        callback(500, {
+          'error': err,
         });
-      });
+
+        return;
+      }
+
+      if (group == null) {
+        callback(404, {
+          'message': 'Group ' + displayName + ' not found.',
+        });
+
+        return;
+      }
+
+      userController.addGroupLink(
+          User, user.username, group._id, function(addStatus, addBody) {
+            if (addStatus != 200) {
+              callback(addStatus, addBody);
+              return;
+            }
+
+            callback(200, {
+              'group': group,
+              'user': addBody.user.toProfileJSON(),
+              'message': 'User ' + username +
+              ' added to group ' + displayName + '.',
+            });
+          });
+    });
+  });
 }
 
 /**
@@ -147,11 +145,10 @@ function addUser(
  * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
-function deleteUser(
-    Group, User, userController, displayName, username, callback) {
-  userController.getUser(User, username, function(userStatus, userBody) {
+function deleteUser(Group, User, userController, displayName, username, callback) {
+  userController.getUserDetails(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
-      callback({userStatus, userBody});
+      callback(userStatus, userBody);
       return;
     }
 
@@ -306,7 +303,7 @@ function deleteGame(Group, displayName, gameName, callback) {
 
     callback(200, {
       'group': group,
-      'message': name + ' removed from group ' + displayName,
+      'message': gameName + ' removed from group ' + displayName,
     });
   });
 }
