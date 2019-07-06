@@ -103,15 +103,11 @@ function addUser(Group, User, userController, displayName, username, callback) {
     }
 
     user = userBody.user;
-    Group.findOneAndUpdate({
-      name: displayName,
-    }, {
-      $addToSet: {
-        users: user._id,
-      },
-    }, {
-      new: true,
-    }).exec(function(err, group) {
+    Group.findOneAndUpdate(
+      {name: displayName},
+      {$addToSet: {users: user._id}},
+      {new: true}
+    ).exec(function(err, group) {
       if (err) {
         callback(500, {
           'error': err,
@@ -163,15 +159,11 @@ function deleteUser(Group, User, userController, displayName, username, callback
     }
 
     user = userBody.user;
-    Group.findOneAndUpdate({
-      name: displayName,
-    }, {
-      $pull: {
-        users: user._id,
-      },
-    }, {
-      new: true,
-    }).exec(function(err, group) {
+    Group.findOneAndUpdate(
+      {name: displayName},
+      {$pull: {users: user._id}},
+      {new: true}
+    ).exec(function(err, group) {
       if (err) {
         callback(500, {
           'error': err,
@@ -232,26 +224,23 @@ function addGame(Group, displayName, gameProperties, callback) {
     return;
   }
 
-  Group.findOneAndUpdate({
-    'name': displayName,
-    'games.name': {
-      $ne: name,
-    },
-  }, {
-    $push: {
-      games: {
-        name,
-        description,
-        thumbnail,
-        image,
-        minPlayers,
-        maxPlayers,
-        playingTime,
+  Group.findOneAndUpdate(
+    {'name': displayName, 'games.name': {$ne: name}}, 
+    {
+      $push: {
+        games: {
+          name,
+          description,
+          thumbnail,
+          image,
+          minPlayers,
+          maxPlayers,
+          playingTime,
+        },
       },
     },
-  }, {
-    new: true,
-  }).exec(function(err, group) {
+    {new: true}
+  ).exec(function(err, group) {
     if (err) {
       callback(500, {
         'error': err,
@@ -284,17 +273,11 @@ function addGame(Group, displayName, gameProperties, callback) {
  * @param {function} callback - The callback funtion.
  */
 function deleteGame(Group, displayName, gameName, callback) {
-  Group.findOneAndUpdate({
-    name: displayName,
-  }, {
-    $pull: {
-      games: {
-        name: gameName,
-      },
-    },
-  }, {
-    new: true,
-  }).exec(function(err, group) {
+  Group.findOneAndUpdate(
+    {name: displayName},
+    {$pull: {games: {name: gameName}}}, 
+    {new: true}
+  ).exec(function(err, group) {
     if (err) {
       callback(500, {
         'error': err,
@@ -340,13 +323,10 @@ function deleteGroup(Group, User, groupName, callback) {
     if (group) {
       // First delete this group from all user lists.
       group.users.forEach(function(user) {
-        User.update({
-          _id: user._id,
-        }, {
-          $pull: {
-            groups: group._id,
-          },
-        }).exec(function(err) {
+        User.update(
+          {_id: user._id},
+          {$pull: {groups: group._id}}
+        ).exec(function(err) {
           if (err) {
             console.log(err);
           }
