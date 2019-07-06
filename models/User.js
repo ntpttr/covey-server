@@ -5,18 +5,22 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const secret = require('../config').secret;
+const uniqueValidator = require('mongoose-unique-validator');
 
 const UserSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,
-    required: [true, 'can\'t be blank'],
-  },
   username: {
     type: String,
-    required: [true, 'can\'t be blank'],
+    required: true,
+    match: /^[a-zA-Z0-9]+$/,
     unique: true,
-    match: [/^[a-zA-Z0-9]+$/, 'is invalid'],
+    uniqueCaseInsensitive: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    index: true,
+    unique: true,
+    uniqueCaseInsensitive: true,
   },
   groups: [{type: mongoose.Schema.Types.ObjectId, ref: 'Group'}],
   games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
@@ -27,6 +31,8 @@ const UserSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
 }, {timestamps: true});
+
+UserSchema.plugin(uniqueValidator);
 
 UserSchema.methods.validPassword = function(password) {
   const hash = crypto.pbkdf2Sync(

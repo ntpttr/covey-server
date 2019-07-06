@@ -205,13 +205,24 @@ function createUser(User, ValidationKey, properties, host, callback) {
 
   user.save(function(err) {
     if (err) {
-      if (err.code === 11000) {
-        // Duplicate user found
-        callback(409, {
-          'message': 'user already exists',
-        });
+      if (err.name === 'ValidationError') {
+        if (err.errors.email) {
+          callback(409, {
+            'message': 'Email ' + err.errors.email.value +
+                       ' is already registered with an account.',
+          });
 
-        return;
+          return;
+        }
+
+        if (err.errors.username) {
+          callback(409, {
+            'message': 'Username ' + err.errors.username.value +
+                       ' is already taken.',
+          });
+
+          return;
+        }
       } else {
         callback(500, {
           'error': err,
@@ -291,11 +302,24 @@ function updateUser(User, username, properties, callback) {
 
     Object.assign(user, properties).save((err, user) => {
       if (err) {
-        if (err.code === 11000) {
-          // Duplicate user found
-          callback(409, {
-            'message': 'user already exists',
-          });
+        if (err.name === 'ValidationError') {
+          if (err.errors.email) {
+            callback(409, {
+              'message': 'Email ' + err.errors.email.value +
+                         ' is already registered with an account.',
+            });
+  
+            return;
+          }
+  
+          if (err.errors.username) {
+            callback(409, {
+              'message': 'Username ' + err.errors.username.value +
+                         ' is already taken.',
+            });
+  
+            return;
+          }
         } else {
           callback(500, {
             'error': err,
@@ -318,15 +342,11 @@ function updateUser(User, username, properties, callback) {
  * @param {function} callback - The callback function.
  */
 function addGroupLink(User, username, groupId, callback) {
-  User.findOneAndUpdate({
-    username: username,
-  }, {
-    $addToSet: {
-      groups: groupId,
-    },
-  }, {
-    new: true,
-  }).exec(function(err, user) {
+  User.findOneAndUpdate(
+    {username: username},
+    {$addToSet: {groups: groupId}}, 
+    {new: true}
+  ).exec(function(err, user) {
     if (err) {
       callback(500, {
         'error': err,
@@ -347,15 +367,11 @@ function addGroupLink(User, username, groupId, callback) {
  * @param {function} callback - The callback function.
  */
 function removeGroupLink(User, username, groupId, callback) {
-  User.findOneAndUpdate({
-    username: username,
-  }, {
-    $pull: {
-      groups: groupId,
-    },
-  }, {
-    new: true,
-  }).exec(function(err, user) {
+  User.findOneAndUpdate(
+    {username: username},
+    {$pull: {groups: groupId}},
+    {new: true,}
+  ).exec(function(err, user) {
     if (err) {
       callback(500, {
         'error': err,
@@ -376,9 +392,9 @@ function removeGroupLink(User, username, groupId, callback) {
  * @param {function} callback - The callback function.
  */
 function deleteUser(User, Group, username, callback) {
-  User.findOne({
-    username: username,
-  }).populate('groups').exec(function(err, user) {
+  User.findOne(
+    {username: username}
+  ).populate('groups').exec(function(err, user) {
     if (err) {
       callback(500, {
         'error': err,

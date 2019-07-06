@@ -11,10 +11,20 @@ function createGroup(Group, properties, callback) {
 
   group.save(function(err) {
     if (err) {
-      callback(500, {
-        'error': err,
-      });
-      return;
+      if (err.errors.name) {
+        callback(409, {
+          'message': 'Group name ' + err.errors.name.value +
+                     ' is already taken.',
+        });
+
+        return;
+      } else {
+        callback(500, {
+          'error': err,
+        });
+  
+        return;
+      }
     }
 
     callback(201, {

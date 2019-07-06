@@ -1,9 +1,16 @@
 // server/models/Group.js
 
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const GameSchema = new mongoose.Schema({
-  name: {type: String, required: true, index: {unique: true}},
+  name: {
+    type: String,
+    required: true,
+    index: true,
+    unique: true,
+    uniqueCaseInsensitive: true,
+  },
   description: {type: String},
   thumbnail: {type: String},
   image: {type: String},
@@ -13,10 +20,19 @@ const GameSchema = new mongoose.Schema({
 });
 
 const GroupSchema = new mongoose.Schema({
-  name: {type: String, required: true, index: {unique: true}},
+  name: {
+    type: String,
+    required: true,
+    index: true,
+    unique: true,
+    uniqueCaseInsensitive: true,
+  },
   description: {type: String},
   users: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   games: [GameSchema],
 });
+
+GameSchema.plugin(uniqueValidator);
+GroupSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('Group', GroupSchema);
