@@ -3,16 +3,6 @@
 const express = require('express');
 const router = new express.Router();
 
-// List all groups
-router.get('/', function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
-
-  groupController.listGroups(Group, function(status, body) {
-    res.status(status).json(body);
-  });
-});
-
 // Get specific group
 router.get('/:identifier', function(req, res) {
   const Group = req.Group;
