@@ -7,9 +7,6 @@ const GameSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    index: true,
-    unique: true,
-    uniqueCaseInsensitive: true,
   },
   description: {type: String},
   thumbnail: {type: String},
@@ -34,7 +31,6 @@ const GroupSchema = new mongoose.Schema({
   games: [GameSchema],
 });
 
-GameSchema.plugin(uniqueValidator);
 GroupSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('Group', GroupSchema);
