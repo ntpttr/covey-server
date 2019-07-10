@@ -11,9 +11,10 @@ function createGroup(Group, properties, callback) {
 
   group.save(function(err) {
     if (err) {
-      if (err.errors.name) {
+      if (err.errors.identifier) {
         callback(409, {
-          'message': 'Group name ' + err.errors.name.value +
+          'message': 'Group identifier ' +
+                      err.errors.identifier.value +
                      ' is already taken.',
         });
 
@@ -34,13 +35,13 @@ function createGroup(Group, properties, callback) {
 }
 
 /**
- * Get groups with a specific name from the database.
+ * Get groups with a specific identifier from the database.
  * @param {schema} Group - The group mongoose schema.
- * @param {string} displayName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {function} callback - The callback function.
  */
-function getGroup(Group, displayName, callback) {
-  Group.findOne({name: displayName}, function(err, group) {
+function getGroup(Group, identifier, callback) {
+  Group.findOne({identifier: identifier}, function(err, group) {
     if (err) {
       callback(500, {
         'error': err,
@@ -51,7 +52,7 @@ function getGroup(Group, displayName, callback) {
       });
     } else {
       callback(404, {
-        'message': 'Group ' + displayName + ' not found.',
+        'message': 'Group ' + identifier + ' not found.',
       });
     }
   });
@@ -60,12 +61,12 @@ function getGroup(Group, displayName, callback) {
 /**
  * Update an existing group.
  * @param {schema} Group - The group mongoose schema.
- * @param {string} name - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function updateGroup(Group, name, properties, callback) {
-  getGroup(Group, name, function(status, body) {
+function updateGroup(Group, identifier, properties, callback) {
+  getGroup(Group, identifier, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
@@ -91,11 +92,11 @@ function updateGroup(Group, name, properties, callback) {
  * @param {schema} Group - The group mongoose schema.
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - the user controller object.
- * @param {string} displayName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(Group, User, userController, displayName, username, callback) {
+function addUser(Group, User, userController, identifier, username, callback) {
   userController.getUserDetails(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -104,7 +105,7 @@ function addUser(Group, User, userController, displayName, username, callback) {
 
     user = userBody.user;
     Group.findOneAndUpdate(
-      {name: displayName},
+      {identifier: identifier},
       {$addToSet: {users: user._id}},
       {new: true}
     ).exec(function(err, group) {
@@ -118,7 +119,7 @@ function addUser(Group, User, userController, displayName, username, callback) {
 
       if (group == null) {
         callback(404, {
-          'message': 'Group ' + displayName + ' not found.',
+          'message': 'Group ' + identifier + ' not found.',
         });
 
         return;
@@ -135,7 +136,7 @@ function addUser(Group, User, userController, displayName, username, callback) {
               'group': group,
               'user': addBody.user.toProfileJSON(),
               'message': 'User ' + username +
-              ' added to group ' + displayName + '.',
+              ' added to group ' + identifier + '.',
             });
           });
     });
@@ -147,11 +148,11 @@ function addUser(Group, User, userController, displayName, username, callback) {
  * @param {schema} Group - The group mongoose schema.
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - The user controller object.
- * @param {string} displayName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
-function deleteUser(Group, User, userController, displayName, username, callback) {
+function deleteUser(Group, User, userController, identifier, username, callback) {
   userController.getUserDetails(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -160,7 +161,7 @@ function deleteUser(Group, User, userController, displayName, username, callback
 
     user = userBody.user;
     Group.findOneAndUpdate(
-      {name: displayName},
+      {identifier: identifier},
       {$pull: {users: user._id}},
       {new: true}
     ).exec(function(err, group) {
@@ -174,7 +175,7 @@ function deleteUser(Group, User, userController, displayName, username, callback
 
       if (group == null) {
         callback(404, {
-          'message': 'Group ' + displayName + ' not found.',
+          'message': 'Group ' + identifier + ' not found.',
         });
 
         return;
@@ -191,7 +192,7 @@ function deleteUser(Group, User, userController, displayName, username, callback
               'group': group,
               'user': removeBody.user.toProfileJSON(),
               'message': 'User ' + username +
-                         ' removed from group ' + displayName + '.',
+                         ' removed from group ' + identifier + '.',
             });
           });
     });
@@ -201,11 +202,11 @@ function deleteUser(Group, User, userController, displayName, username, callback
 /**
  * Add a game to the group.
  * @param {schema} Group - The group mongoose schema.
- * @param {string} displayName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {string} gameProperties - The game properties.
  * @param {function} callback - The callback function.
  */
-function addGame(Group, displayName, gameProperties, callback) {
+function addGame(Group, identifier, gameProperties, callback) {
   const {
     name,
     description,
@@ -225,7 +226,7 @@ function addGame(Group, displayName, gameProperties, callback) {
   }
 
   Group.findOneAndUpdate(
-    {'name': displayName, 'games.name': {$ne: name}}, 
+    {'identifier': identifier, 'games.name': {$ne: name}}, 
     {
       $push: {
         games: {
@@ -251,7 +252,7 @@ function addGame(Group, displayName, gameProperties, callback) {
 
     if (!group) {
       callback(404, {
-        'message': 'Group ' + displayName +
+        'message': 'Group ' + identifier +
         ' doesn\'t exist or already contains ' + name + '.',
       });
 
@@ -260,7 +261,7 @@ function addGame(Group, displayName, gameProperties, callback) {
 
     callback(200, {
       'group': group,
-      'message': name + ' added to group ' + displayName,
+      'message': name + ' added to group ' + identifier,
     });
   });
 }
@@ -268,13 +269,13 @@ function addGame(Group, displayName, gameProperties, callback) {
 /**
  * Remove a game from a group.
  * @param {schema} Group - The group mongoose schema.
- * @param {string} displayName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {string} gameName - The game name.
  * @param {function} callback - The callback funtion.
  */
-function deleteGame(Group, displayName, gameName, callback) {
+function deleteGame(Group, identifier, gameName, callback) {
   Group.findOneAndUpdate(
-    {name: displayName},
+    {identifier: identifier},
     {$pull: {games: {name: gameName}}}, 
     {new: true}
   ).exec(function(err, group) {
@@ -288,7 +289,7 @@ function deleteGame(Group, displayName, gameName, callback) {
 
     if (!group) {
       callback(404, {
-        'message': 'Group ' + displayName + ' not found.',
+        'message': 'Group ' + identifier + ' not found.',
       });
 
       return;
@@ -296,7 +297,7 @@ function deleteGame(Group, displayName, gameName, callback) {
 
     callback(200, {
       'group': group,
-      'message': gameName + ' removed from group ' + displayName,
+      'message': gameName + ' removed from group ' + identifier,
     });
   });
 }
@@ -305,12 +306,12 @@ function deleteGame(Group, displayName, gameName, callback) {
  * Delete a group.
  * @param {schema} Group - The group mongoose schema.
  * @param {schema} User - The user mongoose schema.
- * @param {string} groupName - The group name.
+ * @param {string} identifier - The group identifier.
  * @param {function} callback - The callback function.
  */
-function deleteGroup(Group, User, groupName, callback) {
+function deleteGroup(Group, User, identifier, callback) {
   Group.findOne({
-    name: groupName,
+    identifier: identifier,
   }).populate('users').exec(function(err, group) {
     if (err) {
       callback(500, {
@@ -336,11 +337,11 @@ function deleteGroup(Group, User, groupName, callback) {
       group.remove();
 
       callback(200, {
-        'message': 'group ' + groupName + ' deleted successfully',
+        'message': 'group ' + identifier + ' deleted successfully',
       });
     } else {
       callback(404, {
-        'message': 'group ' + groupName + ' not found',
+        'message': 'group ' + identifier + ' not found',
       });
     }
   });

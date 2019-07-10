@@ -14,13 +14,13 @@ router.get('/', function(req, res) {
 });
 
 // Get specific group
-router.get('/:name', function(req, res) {
+router.get('/:identifier', function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
-  const name = req.params.name;
+  const identifier = req.params.identifier;
 
-  groupController.getGroup(Group, name, function(status, body) {
+  groupController.getGroup(Group, identifier, function(status, body) {
     res.status(status).json(body);
   });
 });
@@ -38,16 +38,16 @@ router.post('/', function(req, res) {
 });
 
 // Update an existing group
-router.patch('/:name', function(req, res) {
+router.patch('/:identifier', function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
-  const name = req.params.name;
+  const identifier = req.params.identifier;
   const properties = req.body;
 
   groupController.updateGroup(
       Group,
-      name,
+      identifier,
       properties,
       function(status, body) {
         res.status(status).json(body);
@@ -55,37 +55,37 @@ router.patch('/:name', function(req, res) {
 });
 
 // Delete group
-router.delete('/:name', function(req, res) {
+router.delete('/:identifier', function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
 
-  const name = req.params.name;
+  const identifier = req.params.identifier;
 
   groupController.deleteGroup(
       Group,
       User,
-      name,
+      identifier,
       function(status, body) {
         res.status(status).json(body);
       });
 });
 
 // Add user to group
-router.post('/:groupName/users', function(req, res) {
+router.post('/:identifier/users', function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
   const userController = req.userController;
 
-  const groupName = req.params.groupName;
+  const identifier = req.params.identifier;
   const username = req.body.username;
 
   groupController.addUser(
       Group,
       User,
       userController,
-      groupName,
+      identifier,
       username,
       function(status, body) {
         res.status(status).json(body);
@@ -93,20 +93,20 @@ router.post('/:groupName/users', function(req, res) {
 });
 
 // Remove user from group
-router.delete('/:groupName/users', function(req, res) {
+router.delete('/:identifier/users', function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
   const userController = req.userController;
 
-  const groupName = req.params.groupName;
+  const identifier = req.params.identifier;
   const username = req.body.username;
 
   groupController.deleteUser(
       Group,
       User,
       userController,
-      groupName,
+      identifier,
       username,
       function(status, body) {
         res.status(status).json(body);
@@ -114,16 +114,16 @@ router.delete('/:groupName/users', function(req, res) {
 });
 
 // Add game to group
-router.post('/:groupName/games', function(req, res, next) {
+router.post('/:identifier/games', function(req, res, next) {
   const Group = req.Group;
   const groupController = req.groupController;
 
-  const groupName = req.params.groupName;
+  const identifier = req.params.identifier;
   const gameProperties = req.body;
 
   groupController.addGame(
       Group,
-      groupName,
+      identifier,
       gameProperties,
       function(status, body) {
         res.status(status).json(body);
@@ -131,16 +131,16 @@ router.post('/:groupName/games', function(req, res, next) {
 });
 
 // Remove game from group
-router.delete('/:groupName/games', function(req, res) {
+router.delete('/:identifier/games', function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
-  const groupName = req.params.groupName;
+  const identifier = req.params.identifier;
   const gameName = req.body.game;
 
   groupController.deleteGame(
       Group,
-      groupName,
+      identifier,
       gameName,
       function(status, body) {
         res.status(status).json(body);

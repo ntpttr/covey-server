@@ -20,13 +20,15 @@ const GameSchema = new mongoose.Schema({
 });
 
 const GroupSchema = new mongoose.Schema({
-  name: {
+  identifier: {
     type: String,
     required: true,
     index: true,
     unique: true,
     uniqueCaseInsensitive: true,
+    match: /^[a-zA-Z0-9]+$/,
   },
+  displayName: {type: String},
   description: {type: String},
   users: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   games: [GameSchema],
