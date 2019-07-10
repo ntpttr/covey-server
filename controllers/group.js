@@ -12,13 +12,26 @@ function createGroup(Group, properties, callback) {
   group.save(function(err) {
     if (err) {
       if (err.errors && err.errors.identifier) {
-        callback(409, {
-          'message': 'Group identifier ' +
-                      err.errors.identifier.value +
-                     ' is already taken.',
-        });
-
-        return;
+        switch (err.errors.identifier.kind) {
+          case "unique":
+            callback(409, {
+              'message': 'Group identifier ' +
+                          err.errors.identifier.value +
+                          ' is already taken.',
+            });
+    
+            return;
+          case "regexp":
+            callback(409, {
+              'message': 'Group identifier ' +
+                          err.errors.identifier.value +
+                          ' is invalid.',
+            });
+    
+            return;
+          default:
+            break;
+        }
       } else {
         callback(500, {
           'error': err,
