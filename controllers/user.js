@@ -206,7 +206,7 @@ function createUser(User, ValidationKey, properties, host, callback) {
   user.save(function(err) {
     if (err) {
       if (err.name === 'ValidationError') {
-        if (err.errors.email) {
+        if (err.errors && err.errors.email) {
           callback(409, {
             'message': 'Email ' + err.errors.email.value +
                        ' is already registered with an account.',
@@ -215,7 +215,7 @@ function createUser(User, ValidationKey, properties, host, callback) {
           return;
         }
 
-        if (err.errors.username) {
+        if (err.errors && err.errors.username) {
           callback(409, {
             'message': 'Username ' + err.errors.username.value +
                        ' is already taken.',

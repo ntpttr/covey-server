@@ -11,7 +11,7 @@ function createGroup(Group, properties, callback) {
 
   group.save(function(err) {
     if (err) {
-      if (err.errors.identifier) {
+      if (err.errors && err.errors.identifier) {
         callback(409, {
           'message': 'Group identifier ' +
                       err.errors.identifier.value +
