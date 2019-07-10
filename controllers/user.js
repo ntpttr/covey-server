@@ -72,7 +72,7 @@ function confirmUser(User, ValidationKey, token, callback) {
     }
 
     if (!key) {
-      callback(400, {
+      callback(404, {
         'message': 'Unable to find a valid token. Your token may have expired.',
       });
 
@@ -89,7 +89,7 @@ function confirmUser(User, ValidationKey, token, callback) {
       }
 
       if (!user) {
-        callback(400, {
+        callback(404, {
           'message': 'Unable to find a user that corresponds to this token.',
         });
 
