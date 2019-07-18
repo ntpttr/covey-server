@@ -280,7 +280,7 @@ function getUserDetails(User, username, callback) {
  * @param {function} callback - The callback function.
  */
 function updateUser(User, username, properties, callback) {
-  if (!properties.username && !properties.image && !properties.password && !properties.name) {
+  if (!properties.name && !properties.email && !properties.password) {
     callback(400, {
       'message': 'Must provide a valid property to update.',
     });
