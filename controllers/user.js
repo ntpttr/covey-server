@@ -11,9 +11,9 @@ const validator = require('validator');
  * @param {function} callback - The callback function.
  */
 function authenticate(creds, callback) {
-  if (!creds.body.username) {
+  if (!creds.body.identifier) {
     callback(422, {
-      'message': 'username is empty',
+      'message': 'Must provide a username or email.',
     });
 
     return;
@@ -21,7 +21,7 @@ function authenticate(creds, callback) {
 
   if (!creds.body.password) {
     callback(422, {
-      'message': 'password is empty',
+      'message': 'Must provide a password.',
     });
 
     return;

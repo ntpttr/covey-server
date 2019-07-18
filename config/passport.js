@@ -2,9 +2,13 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/User');
 
-passport.use(new LocalStrategy(
-    function(username, password, done) {
-      User.findOne({username: username}).then(function(user) {
+passport.use(new LocalStrategy({
+      usernameField: 'identifier',
+      passwordField: 'password',
+    },
+    function(identifier, password, done) {
+      const criteria = (identifier.indexOf('@') === -1) ? {username: identifier} : {email: identifier};
+      User.findOne(criteria).then(function(user) {
         if (!user) {
           return done(
               null,
