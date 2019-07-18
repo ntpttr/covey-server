@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     uniqueCaseInsensitive: true,
   },
+  name: {
+    type: String,
+    match: /^[a-zA-Z ]+$/,
+  },
   groups: [{type: mongoose.Schema.Types.ObjectId, ref: 'Group'}],
   games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],
   image: String,
@@ -66,17 +70,16 @@ UserSchema.methods.generateJWT = function() {
 
 UserSchema.methods.toAuthJSON = function() {
   return {
-    username: this.username,
-    email: this.email,
-    image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+    ...this.toProfileJSON(),
     token: this.generateJWT(),
   };
 };
 
 UserSchema.methods.toProfileJSON = function() {
   return {
-    email: this.email,
     username: this.username,
+    email: this.email,
+    name: this.name,
     groups: this.groups,
     image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
   };
