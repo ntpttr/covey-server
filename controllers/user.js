@@ -320,11 +320,22 @@ function updateUser(User, username, properties, callback) {
   
             return;
           }
-        } else {
-          callback(500, {
-            'error': err,
-          });
+
+          if (err.errors.name) {
+            callback(409, {
+              'message': 'Name ' + err.errors.name.value + ' is invalid.' +
+                         ' Only numbers, letters, and spaces can be used.',
+            });
+  
+            return;
+          }
         }
+
+        callback(500, {
+          'error': err,
+        });
+
+        return;
       } else {
         callback(200, {
           'user': user,
