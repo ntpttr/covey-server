@@ -84,7 +84,7 @@ UserSchema.methods.OwnProfileView = function() {
   };
 };
 
-UserSchema.methods.OtherProfileView = function() {
+UserSchema.methods.ProfileView = function() {
   return {
     username: this.username,
     name: this.name,

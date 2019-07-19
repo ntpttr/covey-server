@@ -38,21 +38,6 @@ router.get('/groups', auth.required, function(req, res) {
   });
 });
 
-// Get other user profile
-router.get('/profile/:username', function(req, res) {
-  const User = req.User;
-  const userController = req.userController;
-  const username = req.params.username;
-
-  userController.getUserProfile(User, username, function(status, body) {
-    if (status != 200) {
-      res.status(status).json(body);
-    } else {
-      res.status(status).json({'user': body.user.OtherProfileView()});
-    }
-  });
-});
-
 // Update an existing user
 router.patch('/', auth.required, function(req, res) {
   const User = req.User;

@@ -27,7 +27,7 @@ const GroupSchema = new mongoose.Schema({
   },
   displayName: {type: String},
   description: {type: String},
-  users: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+  members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   games: [GameSchema],
 });
 
@@ -38,6 +38,7 @@ GroupSchema.methods.MinimalView = function() {
     displayName: this.displayName,
     description: this.description,
     identifier: this.identifier,
+    games: this.games,
   };
 };
 

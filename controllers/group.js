@@ -72,6 +72,38 @@ function getGroup(Group, identifier, callback) {
 }
 
 /**
+ * Get a group's members
+ * @param {schema} Group - The group mongoose schema.
+ * @param {string} identifier - The group identifier.
+ * @param {function} callback - The callback function.
+ */
+function getGroupMembers(Group, identifier, callback) {
+  Group.findOne({identifier: identifier}).
+      populate('members').
+      exec(function(err, group) {
+        if (err) {
+          callback(500, {
+            'error': err,
+          });
+        } else if (group) {
+          // Return only a basic view of each user
+          const members = [];
+          group.members.forEach(function(user) {
+            members.push(user.ProfileView());
+          });
+
+          callback(200, {
+            'members': members,
+          });
+        } else {
+          callback(404, {
+            'message': 'user not found',
+          });
+        }
+      });
+}
+
+/**
  * Update an existing group.
  * @param {schema} Group - The group mongoose schema.
  * @param {string} identifier - The group identifier.
@@ -119,7 +151,7 @@ function addUser(Group, User, userController, identifier, username, callback) {
     user = userBody.user;
     Group.findOneAndUpdate(
       {identifier: identifier},
-      {$addToSet: {users: user._id}},
+      {$addToSet: {members: user._id}},
       {new: true}
     ).exec(function(err, group) {
       if (err) {
@@ -173,7 +205,7 @@ function deleteUser(Group, User, userController, identifier, username, callback)
     user = userBody.user;
     Group.findOneAndUpdate(
       {identifier: identifier},
-      {$pull: {users: user._id}},
+      {$pull: {members: user._id}},
       {new: true}
     ).exec(function(err, group) {
       if (err) {
@@ -269,7 +301,6 @@ function addGame(Group, identifier, gameProperties, callback) {
     }
 
     callback(200, {
-      'group': group,
       'message': name + ' added to group ' + identifier,
     });
   });
@@ -305,7 +336,6 @@ function deleteGame(Group, identifier, gameName, callback) {
     }
 
     callback(200, {
-      'group': group,
       'message': gameName + ' removed from group ' + identifier,
     });
   });
@@ -321,7 +351,7 @@ function deleteGame(Group, identifier, gameName, callback) {
 function deleteGroup(Group, User, identifier, callback) {
   Group.findOne({
     identifier: identifier,
-  }).populate('users').exec(function(err, group) {
+  }).populate('members').exec(function(err, group) {
     if (err) {
       callback(500, {
         'error': err,
@@ -332,7 +362,7 @@ function deleteGroup(Group, User, identifier, callback) {
 
     if (group) {
       // First delete this group from all user lists.
-      group.users.forEach(function(user) {
+      group.members.forEach(function(user) {
         User.update(
           {_id: user._id},
           {$pull: {groups: group._id}}
@@ -357,8 +387,9 @@ function deleteGroup(Group, User, identifier, callback) {
 }
 
 module.exports = {
-  getGroup,
   createGroup,
+  getGroup,
+  getGroupMembers,
   updateGroup,
   addUser,
   deleteUser,

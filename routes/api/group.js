@@ -3,18 +3,6 @@
 const express = require('express');
 const router = new express.Router();
 
-// Get specific group
-router.get('/:identifier', function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
-
-  const identifier = req.params.identifier;
-
-  groupController.getGroup(Group, identifier, function(status, body) {
-    res.status(status).json(body);
-  });
-});
-
 // Create new group
 router.post('/', function(req, res) {
   const Group = req.Group;
@@ -23,7 +11,49 @@ router.post('/', function(req, res) {
   const properties = req.body;
 
   groupController.createGroup(Group, properties, function(status, body) {
-    res.status(status).json(body);
+    if (status != 201) {
+      res.status(status).json(body);
+    } else {
+      res.status(status).json({
+        'group': body.group.MinimalView(),
+      });
+    }
+  });
+});
+
+// Get specific group
+router.get('/:identifier', function(req, res) {
+  const Group = req.Group;
+  const groupController = req.groupController;
+
+  const identifier = req.params.identifier;
+
+  groupController.getGroup(Group, identifier, function(status, body) {
+    if (status != 200) {
+      res.status(status).json(body);
+    } else {
+      res.status(status).json({
+        'group': body.group.MinimalView(),
+      });
+    }
+  });
+});
+
+// Get group members
+router.get('/:identifier/members', function(req, res) {
+  const Group = req.Group;
+  const groupController = req.groupController;
+
+  const identifier = req.params.identifier;
+
+  groupController.getGroupMembers(Group, identifier, function(status, body) {
+    if (status != 200) {
+      res.status(status).json(body);
+    } else {
+      res.status(status).json({
+        'members': body.members,
+      });
+    }
   });
 });
 
@@ -40,7 +70,13 @@ router.patch('/:identifier', function(req, res) {
       identifier,
       properties,
       function(status, body) {
-        res.status(status).json(body);
+        if (status != 200) {
+          res.status(status).json(body);
+        } else {
+          res.status(status).json({
+            'group': body.group.MinimalView(),
+          });
+        }
       });
 });
 
