@@ -68,19 +68,26 @@ UserSchema.methods.generateJWT = function() {
   }, secret);
 };
 
-UserSchema.methods.toAuthJSON = function() {
+UserSchema.methods.AuthView = function() {
   return {
-    ...this.toProfileJSON(),
+    username: this.username,
     token: this.generateJWT(),
   };
 };
 
-UserSchema.methods.toProfileJSON = function() {
+UserSchema.methods.OwnProfileView = function() {
   return {
     username: this.username,
     email: this.email,
     name: this.name,
-    groups: this.groups,
+    image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+  };
+};
+
+UserSchema.methods.OtherProfileView = function() {
+  return {
+    username: this.username,
+    name: this.name,
     image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
   };
 };

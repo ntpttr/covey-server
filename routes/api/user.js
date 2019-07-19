@@ -13,7 +13,7 @@ router.post('/login', function(req, res, next) {
       res.status(status).json(body);
     } else {
       res.status(status).json({
-        'user': body.user.toAuthJSON(),
+        'user': body.user.AuthView(),
       });
     }
   });
@@ -60,13 +60,13 @@ router.post('/', function(req, res) {
           res.status(status).json(body);
         } else {
           res.status(status).json({
-            'user': body.user.toAuthJSON(),
+            'user': body.user.AuthView(),
           });
         }
       });
 });
 
-// Get current logged in user
+// Get current logged in user profile
 router.get('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
@@ -77,13 +77,13 @@ router.get('/', auth.required, function(req, res) {
       res.status(status).json(body);
     } else {
       res.status(status).json({
-        'user': body.user.toProfileJSON(),
+        'user': body.user.OwnProfileView(),
       });
     }
   });
 });
 
-// Get specific user
+// Get other user profile
 router.get('/:username', function(req, res) {
   const User = req.User;
   const userController = req.userController;
@@ -93,7 +93,7 @@ router.get('/:username', function(req, res) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
-      res.status(status).json({'user': body.user.toProfileJSON()});
+      res.status(status).json({'user': body.user.OtherProfileView()});
     }
   });
 });
@@ -113,7 +113,7 @@ router.patch('/', auth.required, function(req, res) {
         if (status != 200) {
           res.status(status).json(body);
         } else {
-          res.status(status).json({'user': body.user.toAuthJSON()});
+          res.status(status).json({'user': body.user.AuthView()});
         }
       });
 });
