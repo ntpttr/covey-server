@@ -15,7 +15,15 @@ const groupController = require('../../controllers/group');
 const gameController = require('../../controllers/game');
 const playController = require('../../controllers/play');
 
-router.use('/user', function(req, res, next) {
+router.use('/me', function(req, res, next) {
+  req.User = User;
+  req.Group = Group;
+  req.ValidationKey = ValidationKey;
+  req.userController = userController;
+  next();
+}, require('./me'));
+
+router.use('/users', function(req, res, next) {
   req.User = User;
   req.Group = Group;
   req.ValidationKey = ValidationKey;

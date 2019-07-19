@@ -247,14 +247,13 @@ function createUser(User, ValidationKey, properties, host, callback) {
 }
 
 /**
- * Get a user based on its name.
+ * Get a user based on their username.
  * @param {schema} User - The user mongoose schema.
  * @param {string} username - The username to get.
  * @param {function} callback - The callback function.
  */
-function getUserDetails(User, username, callback) {
+function getUserProfile(User, username, callback) {
   User.findOne({username: username}).
-      populate('groups').
       exec(function(err, user) {
         if (err) {
           callback(500, {
@@ -263,6 +262,38 @@ function getUserDetails(User, username, callback) {
         } else if (user) {
           callback(200, {
             'user': user,
+          });
+        } else {
+          callback(404, {
+            'message': 'user not found',
+          });
+        }
+      });
+}
+
+/**
+ * Get a user's joined groups
+ * @param {schema} User - The user mongoose schema.
+ * @param {string} username - The username to get.
+ * @param {function} callback - The callback function.
+ */
+function getUserGroups(User, username, callback) {
+  User.findOne({username: username}).
+      populate('groups').
+      exec(function(err, user) {
+        if (err) {
+          callback(500, {
+            'error': err,
+          });
+        } else if (user) {
+          // Return only a basic view of each group
+          const groups = [];
+          user.groups.forEach(function(group) {
+            groups.push(group.MinimalView());
+          });
+
+          callback(200, {
+            'groups': groups,
           });
         } else {
           callback(404, {
@@ -288,7 +319,7 @@ function updateUser(User, username, properties, callback) {
     return;
   }
 
-  getUserDetails(User, username, function(status, body) {
+  getUserProfile(User, username, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
@@ -499,7 +530,8 @@ module.exports = {
   authenticate,
   confirmUser,
   resendConfirmation,
-  getUserDetails,
+  getUserProfile,
+  getUserGroups,
   createUser,
   updateUser,
   addGroupLink,

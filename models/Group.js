@@ -33,4 +33,12 @@ const GroupSchema = new mongoose.Schema({
 
 GroupSchema.plugin(uniqueValidator);
 
+GroupSchema.methods.MinimalView = function() {
+  return {
+    displayName: this.displayName,
+    description: this.description,
+    identifier: this.identifier,
+  };
+};
+
 module.exports = mongoose.model('Group', GroupSchema);

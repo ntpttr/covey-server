@@ -110,7 +110,7 @@ function updateGroup(Group, identifier, properties, callback) {
  * @param {function} callback - The callback function.
  */
 function addUser(Group, User, userController, identifier, username, callback) {
-  userController.getUserDetails(User, username, function(userStatus, userBody) {
+  userController.getUserProfile(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
       return;
@@ -146,8 +146,6 @@ function addUser(Group, User, userController, identifier, username, callback) {
             }
 
             callback(200, {
-              'group': group,
-              'user': addBody.user.toProfileJSON(),
               'message': 'User ' + username +
               ' added to group ' + identifier + '.',
             });
@@ -166,7 +164,7 @@ function addUser(Group, User, userController, identifier, username, callback) {
  * @param {function} callback - The callback function.
  */
 function deleteUser(Group, User, userController, identifier, username, callback) {
-  userController.getUserDetails(User, username, function(userStatus, userBody) {
+  userController.getUserProfile(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
       return;
@@ -202,8 +200,6 @@ function deleteUser(Group, User, userController, identifier, username, callback)
             }
 
             callback(200, {
-              'group': group,
-              'user': removeBody.user.toProfileJSON(),
               'message': 'User ' + username +
                          ' removed from group ' + identifier + '.',
             });
