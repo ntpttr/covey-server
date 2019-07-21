@@ -3,10 +3,13 @@
 /**
  * Create a new group.
  * @param {schema} Group - The group mongoose schema.
- * @param {object} properties - The group properties
+ * @param {schema} User - The user mongoose schema.
+ * @param {string} creator - The group creator.
+ * @param {controller} userController - The user controller object.
+ * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function createGroup(Group, properties, callback) {
+function createGroup(Group, User, creator, userController, properties, callback) {
   group = new Group(properties);
 
   group.save(function(err) {
@@ -41,8 +44,20 @@ function createGroup(Group, properties, callback) {
       }
     }
 
-    callback(201, {
-      'group': group,
+    addUser(Group, User, userController, group.identifier, creator, function(status, body) {
+      if (status != 200) {
+        deleteGroup(Group, User, group.identifier, function(status, body) {
+          callback(500, {
+            'message': 'Something went wrong adding creator to the group.',
+          });
+
+          return;
+        });
+      }
+
+      callback(201, {
+        'group': group,
+      });
     });
   });
 }
@@ -110,7 +125,7 @@ function getGroupMembers(Group, identifier, callback) {
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function updateGroup(Group, identifier, properties, callback) {
+function updateGroup(Group, identifier, actingUser, properties, callback) {
   getGroup(Group, identifier, function(status, body) {
     if (status != 200) {
       callback(status, body);
@@ -118,6 +133,16 @@ function updateGroup(Group, identifier, properties, callback) {
     }
 
     group = body.group;
+
+    // Make sure the user is allowed to act on the group
+    if (!isUserAuthorizedForGroup(group, actingUser)) {
+      callback(404, {
+        'message': 'group ' + identifier + ' not found',
+      });
+
+      return;
+    }
+
     Object.assign(group, properties).save((err, group) => {
       if (err) {
         callback(500, {
@@ -316,7 +341,7 @@ function addGame(Group, identifier, gameProperties, callback) {
 function deleteGame(Group, identifier, gameName, callback) {
   Group.findOneAndUpdate(
     {identifier: identifier},
-    {$pull: {games: {name: gameName}}}, 
+    {$pull: {games: {name: gameName}}},
     {new: true}
   ).exec(function(err, group) {
     if (err) {
@@ -346,9 +371,10 @@ function deleteGame(Group, identifier, gameName, callback) {
  * @param {schema} Group - The group mongoose schema.
  * @param {schema} User - The user mongoose schema.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user deleting the group.
  * @param {function} callback - The callback function.
  */
-function deleteGroup(Group, User, identifier, callback) {
+function deleteGroup(Group, User, identifier, actingUser, callback) {
   Group.findOne({
     identifier: identifier,
   }).populate('members').exec(function(err, group) {
@@ -361,6 +387,15 @@ function deleteGroup(Group, User, identifier, callback) {
     }
 
     if (group) {
+      // Make sure the user is allowed to act on the group
+      if (!isUserAuthorizedForGroup(group, actingUser)) {
+        callback(404, {
+          'message': 'group ' + identifier + ' not found',
+        });
+
+        return;
+      }
+
       // First delete this group from all user lists.
       group.members.forEach(function(user) {
         User.update(
@@ -384,6 +419,17 @@ function deleteGroup(Group, User, identifier, callback) {
       });
     }
   });
+}
+
+/**
+ * Checks if a user is authorized to perform an action on a group
+ * @param {object} group - The group object.
+ * @param {string} username - The username of the user.
+ * @returns Whether the user is a group member.
+ */
+function isUserAuthorizedForGroup(group, username) {
+  let members = group.members.filter(member => (member.username == username));
+  return members.length > 0;
 }
 
 module.exports = {

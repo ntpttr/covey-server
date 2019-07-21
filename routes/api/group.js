@@ -1,16 +1,19 @@
 // routes/api/group.js
 
 const express = require('express');
+const auth = require('../auth');
 const router = new express.Router();
 
 // Create new group
-router.post('/', function(req, res) {
+router.post('/', auth.required, function(req, res) {
   const Group = req.Group;
+  const User = req.User;
   const groupController = req.groupController;
-
+  const userController = req.userController;
+  const creator = req.payload.username;
   const properties = req.body;
 
-  groupController.createGroup(Group, properties, function(status, body) {
+  groupController.createGroup(Group, User, creator, userController, properties, function(status, body) {
     if (status != 201) {
       res.status(status).json(body);
     } else {
@@ -22,7 +25,7 @@ router.post('/', function(req, res) {
 });
 
 // Get specific group
-router.get('/:identifier', function(req, res) {
+router.get('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
@@ -40,7 +43,7 @@ router.get('/:identifier', function(req, res) {
 });
 
 // Get group members
-router.get('/:identifier/members', function(req, res) {
+router.get('/:identifier/members', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
@@ -58,16 +61,17 @@ router.get('/:identifier/members', function(req, res) {
 });
 
 // Update an existing group
-router.patch('/:identifier', function(req, res) {
+router.patch('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const properties = req.body;
 
   groupController.updateGroup(
       Group,
       identifier,
+      actingUser,
       properties,
       function(status, body) {
         if (status != 200) {
@@ -81,24 +85,25 @@ router.patch('/:identifier', function(req, res) {
 });
 
 // Delete group
-router.delete('/:identifier', function(req, res) {
+router.delete('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
 
   groupController.deleteGroup(
       Group,
       User,
       identifier,
+      actingUser,
       function(status, body) {
         res.status(status).json(body);
       });
 });
 
 // Add user to group
-router.post('/:identifier/users', function(req, res) {
+router.post('/:identifier/users', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
@@ -119,7 +124,7 @@ router.post('/:identifier/users', function(req, res) {
 });
 
 // Remove user from group
-router.delete('/:identifier/users', function(req, res) {
+router.delete('/:identifier/users', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
   const groupController = req.groupController;
@@ -140,7 +145,7 @@ router.delete('/:identifier/users', function(req, res) {
 });
 
 // Add game to group
-router.post('/:identifier/games', function(req, res, next) {
+router.post('/:identifier/games', auth.required, function(req, res, next) {
   const Group = req.Group;
   const groupController = req.groupController;
 
@@ -157,7 +162,7 @@ router.post('/:identifier/games', function(req, res, next) {
 });
 
 // Remove game from group
-router.delete('/:identifier/games', function(req, res) {
+router.delete('/:identifier/games', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
 
