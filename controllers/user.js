@@ -506,7 +506,7 @@ function sendConfirmationEmail(ValidationKey, user, host, callback) {
       subject: 'Account Verification Token',
       text: 'Hi ' + user.username + ',\n\n' + 'Verify your ' +
             'Covey account by clicking this link:' +
-            '\nhttp:\/\/' + host + '\/user\/confirm\/' +
+            '\nhttp:\/\/' + host + '\/users\/confirm\/' +
             validationKey.token + '.\n',
     };
 
