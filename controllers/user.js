@@ -412,7 +412,7 @@ function removeGroupLink(User, username, groupId, callback) {
   User.findOneAndUpdate(
     {username: username},
     {$pull: {groups: groupId}},
-    {new: true,}
+    {new: true}
   ).exec(function(err, user) {
     if (err) {
       callback(500, {
@@ -506,7 +506,7 @@ function sendConfirmationEmail(ValidationKey, user, host, callback) {
       subject: 'Account Verification Token',
       text: 'Hi ' + user.username + ',\n\n' + 'Verify your ' +
             'Covey account by clicking this link:' +
-            '\nhttp:\/\/' + host + '\/user\/confirm\/' +
+            '\nhttp:\/\/' + host + '\/users\/confirm\/' +
             validationKey.token + '.\n',
     };
 

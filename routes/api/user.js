@@ -75,7 +75,7 @@ router.get('/:username', function(req, res) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
-      res.status(status).json({'user': body.user.OtherProfileView()});
+      res.status(status).json({'user': body.user.ProfileView()});
     }
   });
 });
