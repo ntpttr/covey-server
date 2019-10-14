@@ -28,32 +28,15 @@ router.post('/', auth.required, function(req, res) {
 router.get('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
 
-  groupController.getGroup(Group, identifier, function(status, body) {
+  groupController.getGroup(Group, identifier, actingUser, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
       res.status(status).json({
         'group': body.group.MinimalView(),
-      });
-    }
-  });
-});
-
-// Get group members
-router.get('/:identifier/members', auth.required, function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
-
-  const identifier = req.params.identifier;
-
-  groupController.getGroupMembers(Group, identifier, function(status, body) {
-    if (status != 200) {
-      res.status(status).json(body);
-    } else {
-      res.status(status).json({
         'members': body.members,
       });
     }
@@ -108,7 +91,7 @@ router.post('/:identifier/users', auth.required, function(req, res) {
   const User = req.User;
   const groupController = req.groupController;
   const userController = req.userController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
@@ -117,6 +100,7 @@ router.post('/:identifier/users', auth.required, function(req, res) {
       User,
       userController,
       identifier,
+      actingUser,
       username,
       function(status, body) {
         res.status(status).json(body);
@@ -129,7 +113,7 @@ router.delete('/:identifier/users', auth.required, function(req, res) {
   const User = req.User;
   const groupController = req.groupController;
   const userController = req.userController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
@@ -138,6 +122,7 @@ router.delete('/:identifier/users', auth.required, function(req, res) {
       User,
       userController,
       identifier,
+      actingUser,
       username,
       function(status, body) {
         res.status(status).json(body);
@@ -148,13 +133,14 @@ router.delete('/:identifier/users', auth.required, function(req, res) {
 router.post('/:identifier/games', auth.required, function(req, res, next) {
   const Group = req.Group;
   const groupController = req.groupController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const gameProperties = req.body;
 
   groupController.addGame(
       Group,
       identifier,
+      actingUser,
       gameProperties,
       function(status, body) {
         res.status(status).json(body);
@@ -165,13 +151,14 @@ router.post('/:identifier/games', auth.required, function(req, res, next) {
 router.delete('/:identifier/games', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
-
+  const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const gameName = req.body.game;
 
   groupController.deleteGame(
       Group,
       identifier,
+      actingUser,
       gameName,
       function(status, body) {
         res.status(status).json(body);

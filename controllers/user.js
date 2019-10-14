@@ -412,7 +412,7 @@ function removeGroupLink(User, username, groupId, callback) {
   User.findOneAndUpdate(
     {username: username},
     {$pull: {groups: groupId}},
-    {new: true,}
+    {new: true}
   ).exec(function(err, user) {
     if (err) {
       callback(500, {

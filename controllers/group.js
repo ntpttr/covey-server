@@ -10,138 +10,138 @@
  * @param {function} callback - The callback function.
  */
 function createGroup(Group, User, creator, userController, properties, callback) {
-  group = new Group(properties);
-
-  group.save(function(err) {
-    if (err) {
-      if (err.errors && err.errors.identifier) {
-        switch (err.errors.identifier.kind) {
-          case "unique":
-            callback(409, {
-              'message': 'Group identifier ' +
-                          err.errors.identifier.value +
-                          ' is already taken.',
-            });
-    
-            return;
-          case "regexp":
-            callback(409, {
-              'message': 'Group identifier ' +
-                          err.errors.identifier.value +
-                          ' is invalid.',
-            });
-    
-            return;
-          default:
-            break;
-        }
-      } else {
-        callback(500, {
-          'error': err,
-        });
-  
-        return;
-      }
+  userController.getUserProfile(User, creator, function(userStatus, userBody) {
+    if (userStatus != 200) {
+      callback(userStatus, userBody);
+      return;
     }
 
-    addUser(Group, User, userController, group.identifier, creator, function(status, body) {
-      if (status != 200) {
-        deleteGroup(Group, User, group.identifier, function(status, body) {
-          callback(500, {
-            'message': 'Something went wrong adding creator to the group.',
-          });
+    const {
+      identifier,
+      displayName,
+      description,
+    } = properties;
 
-          return;
-        });
-      }
-
-      callback(201, {
-        'group': group,
-      });
+    group = new Group({
+      'identifier': identifier,
+      'displayName': displayName,
+      'description': description,
+      'numMembers': 1,
     });
-  });
-}
 
-/**
- * Get groups with a specific identifier from the database.
- * @param {schema} Group - The group mongoose schema.
- * @param {string} identifier - The group identifier.
- * @param {function} callback - The callback function.
- */
-function getGroup(Group, identifier, callback) {
-  Group.findOne({identifier: identifier}, function(err, group) {
-    if (err) {
-      callback(500, {
-        'error': err,
-      });
-    } else if (group) {
-      callback(200, {
-        'group': group,
-      });
-    } else {
-      callback(404, {
-        'message': 'Group ' + identifier + ' not found.',
-      });
-    }
-  });
-}
+    user = userBody.user;
 
-/**
- * Get a group's members
- * @param {schema} Group - The group mongoose schema.
- * @param {string} identifier - The group identifier.
- * @param {function} callback - The callback function.
- */
-function getGroupMembers(Group, identifier, callback) {
-  Group.findOne({identifier: identifier}).
-      populate('members').
-      exec(function(err, group) {
-        if (err) {
+    group.members.push({
+      'username': user.username,
+      'link': user,
+    });
+
+    group.save(function(err) {
+      if (err) {
+        if (err.errors && err.errors.identifier) {
+          switch (err.errors.identifier.kind) {
+            case "unique":
+              callback(409, {
+                'message': 'Group identifier ' +
+                            err.errors.identifier.value +
+                            ' is already taken.',
+              });
+      
+              return;
+            case "regexp":
+              callback(409, {
+                'message': 'Group identifier ' +
+                            err.errors.identifier.value +
+                            ' is invalid.',
+              });
+      
+              return;
+            default:
+              break;
+          }
+        } else {
           callback(500, {
             'error': err,
           });
-        } else if (group) {
-          // Return only a basic view of each user
-          const members = [];
-          group.members.forEach(function(user) {
-            members.push(user.ProfileView());
-          });
+    
+          return;
+        }
+      }
+    });
 
-          callback(200, {
-            'members': members,
-          });
-        } else {
-          callback(404, {
-            'message': 'user not found',
+    userController.addGroupLink(
+      User, user.username, group._id, function(addStatus, addBody) {
+        if (addStatus != 200) {
+          deleteGroup(Group, User, group.identifier, function(deleteStatus, deleteBody) {
+            callback(500, {
+              'message': 'Something went wrong adding creator to the group.',
+            });
+  
+            return;
           });
         }
+
+        callback(201, {
+          'group': group
+        });
       });
+  });
+}
+
+/**
+ * Get groups with a specific identifier from the database
+ * if the calling user is authorized for the group.
+ * @param {schema} Group - The group mongoose schema.
+ * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
+ * @param {function} callback - The callback function.
+ */
+function getGroup(Group, identifier, actingUser, callback) {
+  Group.findOne({
+    'identifier': identifier,
+    'members.username': actingUser,
+  }).
+    populate('members.link').
+    exec(function(err, group) {
+      if (err) {
+        callback(500, {
+          'error': err,
+        });
+      } else if (group) {
+        const members = [];
+        group.members.forEach(function(member) {
+          members.push(member.link.ProfileView());
+        });
+        callback(200, {
+          'group': group,
+          'members': members
+        });
+
+        return;
+      }
+
+      callback(404, {
+        'message': 'Group ' + identifier + ' not found.',
+      });
+  });
 }
 
 /**
  * Update an existing group.
  * @param {schema} Group - The group mongoose schema.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
 function updateGroup(Group, identifier, actingUser, properties, callback) {
-  getGroup(Group, identifier, function(status, body) {
+  getGroup(Group, identifier, actingUser, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
     }
 
     group = body.group;
-
-    // Make sure the user is allowed to act on the group
-    if (!isUserAuthorizedForGroup(group, actingUser)) {
-      callback(404, {
-        'message': 'group ' + identifier + ' not found',
-      });
-
-      return;
-    }
 
     Object.assign(group, properties).save((err, group) => {
       if (err) {
@@ -163,10 +163,11 @@ function updateGroup(Group, identifier, actingUser, properties, callback) {
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - the user controller object.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
  * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(Group, User, userController, identifier, username, callback) {
+function addUser(Group, User, userController, identifier, actingUser, username, callback) {
   userController.getUserProfile(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -174,9 +175,20 @@ function addUser(Group, User, userController, identifier, username, callback) {
     }
 
     user = userBody.user;
+
     Group.findOneAndUpdate(
-      {identifier: identifier},
-      {$addToSet: {members: user._id}},
+      {
+        'identifier': identifier,
+        'members.username': actingUser,
+      },
+      {
+        '$addToSet': {
+          'members': {
+            'username': user.username,
+            'link': user,
+          },
+         },
+      },
       {new: true}
     ).exec(function(err, group) {
       if (err) {
@@ -217,10 +229,11 @@ function addUser(Group, User, userController, identifier, username, callback) {
  * @param {schema} User - The user mongoose schema.
  * @param {controller} userController - The user controller object.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
  * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
-function deleteUser(Group, User, userController, identifier, username, callback) {
+function deleteUser(Group, User, userController, identifier, actingUser, username, callback) {
   userController.getUserProfile(User, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -228,11 +241,10 @@ function deleteUser(Group, User, userController, identifier, username, callback)
     }
 
     user = userBody.user;
-    Group.findOneAndUpdate(
-      {identifier: identifier},
-      {$pull: {members: user._id}},
-      {new: true}
-    ).exec(function(err, group) {
+    Group.findOne({
+        'identifier': identifier,
+        'members.username': actingUser,
+    }).exec(function(err, group) {
       if (err) {
         callback(500, {
           'error': err,
@@ -248,6 +260,24 @@ function deleteUser(Group, User, userController, identifier, username, callback)
 
         return;
       }
+
+      if (group.members.length == 1) {
+        callback(403, {
+          'message': 'Cannot remove last member from the group.',
+        });
+
+        return;
+      }
+
+      // Remove the member from the group
+      for(var i = 0; i < group.members.length; i++) {
+        if(group.members[i].username == user.username) {
+            group.members.splice(i, 1);
+            break;
+        }
+      }
+
+      group.save();
 
       userController.removeGroupLink(
           User, user.username, group._id, function(removeStatus, removeBody) {
@@ -269,10 +299,11 @@ function deleteUser(Group, User, userController, identifier, username, callback)
  * Add a game to the group.
  * @param {schema} Group - The group mongoose schema.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
  * @param {string} gameProperties - The game properties.
  * @param {function} callback - The callback function.
  */
-function addGame(Group, identifier, gameProperties, callback) {
+function addGame(Group, identifier, actingUser, gameProperties, callback) {
   const {
     name,
     description,
@@ -292,19 +323,22 @@ function addGame(Group, identifier, gameProperties, callback) {
   }
 
   Group.findOneAndUpdate(
-    {'identifier': identifier, 'games.name': {$ne: name}}, 
     {
-      $push: {
-        games: {
-          name,
-          description,
-          thumbnail,
-          image,
-          minPlayers,
-          maxPlayers,
-          playingTime,
+      'identifier': identifier,
+      'members.username': actingUser,
+    }, 
+    {
+      $addToSet: {
+        'games': {
+          'name': name,
+          'description': description,
+          'thumbnail': thumbnail,
+          'image': image,
+          'minPlayers': minPlayers,
+          'maxPlayers': maxPlayers,
+          'playingTime': playingTime,
         },
-      },
+       },
     },
     {new: true}
   ).exec(function(err, group) {
@@ -335,13 +369,22 @@ function addGame(Group, identifier, gameProperties, callback) {
  * Remove a game from a group.
  * @param {schema} Group - The group mongoose schema.
  * @param {string} identifier - The group identifier.
+ * @param {string} actingUser - The user making the get group request.
  * @param {string} gameName - The game name.
  * @param {function} callback - The callback funtion.
  */
-function deleteGame(Group, identifier, gameName, callback) {
-  Group.findOneAndUpdate(
-    {identifier: identifier},
-    {$pull: {games: {name: gameName}}},
+function deleteGame(Group, identifier, actingUser, gameName, callback) {
+  Group.findOneAndUpdate({
+      'identifier': identifier,
+      'members.username': actingUser,
+    },
+    {
+      $pull: {
+        'games': {
+          'name': gameName
+        }
+      }
+    },
     {new: true}
   ).exec(function(err, group) {
     if (err) {
@@ -376,8 +419,9 @@ function deleteGame(Group, identifier, gameName, callback) {
  */
 function deleteGroup(Group, User, identifier, actingUser, callback) {
   Group.findOne({
-    identifier: identifier,
-  }).populate('members').exec(function(err, group) {
+      'identifier': identifier,
+      'members.username': actingUser,
+    }).populate('members.link').exec(function(err, group) {
     if (err) {
       callback(500, {
         'error': err,
@@ -387,19 +431,10 @@ function deleteGroup(Group, User, identifier, actingUser, callback) {
     }
 
     if (group) {
-      // Make sure the user is allowed to act on the group
-      if (!isUserAuthorizedForGroup(group, actingUser)) {
-        callback(404, {
-          'message': 'group ' + identifier + ' not found',
-        });
-
-        return;
-      }
-
       // First delete this group from all user lists.
-      group.members.forEach(function(user) {
+      group.members.forEach(function(member) {
         User.update(
-          {_id: user._id},
+          {_id: member.link._id},
           {$pull: {groups: group._id}}
         ).exec(function(err) {
           if (err) {
@@ -421,21 +456,9 @@ function deleteGroup(Group, User, identifier, actingUser, callback) {
   });
 }
 
-/**
- * Checks if a user is authorized to perform an action on a group
- * @param {object} group - The group object.
- * @param {string} username - The username of the user.
- * @returns Whether the user is a group member.
- */
-function isUserAuthorizedForGroup(group, username) {
-  let members = group.members.filter(member => (member.username == username));
-  return members.length > 0;
-}
-
 module.exports = {
   createGroup,
   getGroup,
-  getGroupMembers,
   updateGroup,
   addUser,
   deleteUser,

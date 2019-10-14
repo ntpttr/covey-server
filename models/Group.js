@@ -14,7 +14,12 @@ const GameSchema = new mongoose.Schema({
   minPlayers: {type: Number},
   maxPlayers: {type: Number},
   playingTime: {type: Number},
-});
+}, {_id: false});
+
+const MemberSchema = new mongoose.Schema({
+  username: {type: String},
+  link: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+}, {_id: false});
 
 const GroupSchema = new mongoose.Schema({
   identifier: {
@@ -27,7 +32,7 @@ const GroupSchema = new mongoose.Schema({
   },
   displayName: {type: String},
   description: {type: String},
-  members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+  members: [MemberSchema],
   games: [GameSchema],
 });
 
