@@ -43,6 +43,14 @@ GroupSchema.methods.MinimalView = function() {
     displayName: this.displayName,
     description: this.description,
     identifier: this.identifier,
+  };
+};
+
+GroupSchema.methods.DetailedView = function() {
+  return {
+    displayName: this.displayName,
+    description: this.description,
+    identifier: this.identifier,
     games: this.games,
   };
 };

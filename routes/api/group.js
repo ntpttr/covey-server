@@ -36,7 +36,7 @@ router.get('/:identifier', auth.required, function(req, res) {
       res.status(status).json(body);
     } else {
       res.status(status).json({
-        'group': body.group.MinimalView(),
+        'group': body.group.DetailedView(),
         'members': body.members,
       });
     }
