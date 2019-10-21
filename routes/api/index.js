@@ -47,7 +47,9 @@ router.use('/games', function(req, res, next) {
 
 router.use('/plays', function(req, res, next) {
   req.Play = Play;
+  req.Group = Group;
   req.playController = playController;
+  req.groupController = groupController;
   next();
 }, require('./play'));
 

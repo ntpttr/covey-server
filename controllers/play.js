@@ -3,28 +3,55 @@
 /**
  * Records a new play for a group
  * @param {schema} Play - The play mongoose schema
+ * @param {schema} Group - The group mongoose schema
+ * @param {controller} groupController - The group controller
+ * @param {string} actingUser - The user making the get group request
  * @param {String} gameName - The game name
- * @param {String} groupName - The group name
+ * @param {String} groupIdent - The group identifier
  * @param {Array} players - The players
  * @param {function} callback = The callback function
  */
-function addPlay(Play, gameName, groupName, players, callback) {
-  play = new Play({
-    game: gameName,
-    group: groupName,
-    players: players,
-  });
+function addPlay(Play, Group, groupController, actingUser, gameName, groupIdent, players, callback) {
+  groupController.getGroup(Group, groupIdent, actingUser, function(groupStatus, groupBody) {
+    if (groupStatus != 200) {
+      callback(groupStatus, groupBody);
+      return;
+    }
 
-  play.save(function(err) {
-    if (err) {
-      callback(500, {
-        'error': err,
+    let group = groupBody.group;
+
+    // Check that the requested game to add a play for exists in the group
+    let gameInGroup = false;
+    group.games.forEach(function(game) {
+      if (game.name === gameName) {
+        gameInGroup = true;
+      }
+    });
+
+    if (!gameInGroup) {
+      callback(400, {
+        'message': "Game " + gameName + " must be added to the group to register plays",
       });
       return;
     }
 
-    callback(201, {
-      'play': play,
+    play = new Play({
+      game: gameName,
+      group: groupIdent,
+      players: players,
+    });
+  
+    play.save(function(err) {
+      if (err) {
+        callback(500, {
+          'error': err,
+        });
+        return;
+      }
+  
+      callback(201, {
+        'play': play,
+      });
     });
   });
 }
@@ -32,21 +59,30 @@ function addPlay(Play, gameName, groupName, players, callback) {
 /**
  * Get all plays for a given group
  * @param {schema} Play - The play mongoose schema
- * @param {String} groupName - The group name
+ * @param {schema} Group - The group mongoose schema
+ * @param {controller} groupController - The group controller
+ * @param {string} actingUser - The user making the get group request
+ * @param {String} groupIdent - The group identifier
  * @param {function} callback - The callback function
  */
-function getGroupPlays(Play, groupName, callback) {
-  Play.find({group: groupName}, function(err, plays) {
-    if (err) {
-      callback(500, {
-        'error': err,
-      });
-
+function getGroupPlays(Play, Group, groupController, actingUser, groupIdent, callback) {
+  groupController.getGroup(Group, groupIdent, actingUser, function(groupStatus, groupBody) {
+    if (groupStatus != 200) {
+      callback(groupStatus, groupBody);
       return;
     }
 
-    callback(200, {
-      'plays': plays,
+    Play.find({group: groupIdent}, function(err, plays) {
+      if (err) {
+        callback(500, {
+          'error': err,
+        });
+        return;
+      }
+
+      callback(200, {
+        'plays': plays,
+      });
     });
   });
 }
@@ -77,24 +113,35 @@ function getUserPlays(Play, username, callback) {
 /**
  * Get all plays for a given user
  * @param {schema} Play - The play mongoose schema
- * @param {String} id - The play ID
+ * @param {schema} Group - The group mongoose schema
+ * @param {controller} groupController - The group controller
+ * @param {string} actingUser - The user making the get group request
+ * @param {String} groupIdent - The group identifier
+ * @param {String} playId - The play ID
  * @param {function} callback - The callback function
  */
-function deletePlay(Play, id, callback) {
-  Play.findByIdAndRemove(id, function(err, play) {
-    if (err) {
-      callback(500, {
-        'error': err,
-      });
-    } else if (play) {
-      callback(200, {
-        'message': 'Play deleted successfully',
-      });
-    } else {
-      callback(404, {
-        'message': 'Play not found',
-      });
+function deletePlay(Play, Group, groupController, actingUser, groupIdent, playId, callback) {
+  groupController.getGroup(Group, groupIdent, actingUser, function(groupStatus, groupBody) {
+    if (groupStatus != 200) {
+      callback(groupStatus, groupBody);
+      return;
     }
+
+    Play.findByIdAndRemove(playId, function(err, play) {
+      if (err) {
+        callback(500, {
+          'error': err,
+        });
+      } else if (play) {
+        callback(200, {
+          'message': 'Play deleted successfully',
+        });
+      } else {
+        callback(404, {
+          'message': 'Play not found',
+        });
+      }
+    });
   });
 }
 

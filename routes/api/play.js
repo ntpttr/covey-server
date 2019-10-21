@@ -1,45 +1,61 @@
 // routes/api/play.js
 
 const express = require('express');
+const auth = require('../auth');
 const router = new express.Router();
 
 // Create new play
-router.post('/', function(req, res) {
+router.post('/', auth.required, function(req, res) {
   const Play = req.Play;
+  const Group = req.Group;
   const playController = req.playController;
+  const groupController = req.groupController;
 
+  const actingUser = req.payload.username;
   const gameName = req.body.game;
-  const groupName = req.body.group;
+  const groupIdent = req.body.group;
   const players = req.body.players;
 
   playController.addPlay(
       Play,
+      Group,
+      groupController,
+      actingUser,
       gameName,
-      groupName,
+      groupIdent,
       players,
       function(status, body) {
         res.status(status).json(body);
       });
 });
 
-router.get('/:groupName', function(req, res) {
+// Get all plays for a group
+router.get('/:groupIdent', auth.required, function(req, res) {
   const Play = req.Play;
+  const Group = req.Group;
   const playController = req.playController;
+  const groupController = req.groupController;
 
-  const groupName = req.params.groupName;
+  const actingUser = req.payload.username;
+  const groupIdent = req.params.groupIdent;
 
-  playController.getGroupPlays(Play, groupName, function(status, body) {
+  playController.getGroupPlays(Play, Group, groupController, actingUser, groupIdent, function(status, body) {
     res.status(status).json(body);
   });
 });
 
-router.delete('/:playId', function(req, res) {
+// Delete a play
+router.delete('/:playId', auth.required, function(req, res) {
   const Play = req.Play;
+  const Group = req.Group;
   const playController = req.playController;
+  const groupController = req.groupController;
 
+  const actingUser = req.payload.username;
   const playId = req.params.playId;
+  const groupIdent = req.body.group;
 
-  playController.deletePlay(Play, playId, function(status, body) {
+  playController.deletePlay(Play, Group, groupController, actingUser, groupIdent, playId, function(status, body) {
     res.status(status).json(body);
   });
 });
