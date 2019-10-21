@@ -14,7 +14,7 @@ const GameSchema = new mongoose.Schema({
   minPlayers: {type: Number},
   maxPlayers: {type: Number},
   playingTime: {type: Number},
-}, {_id: false});
+});
 
 const MemberSchema = new mongoose.Schema({
   username: {type: String},
