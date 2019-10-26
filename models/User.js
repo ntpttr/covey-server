@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    match: /^[a-zA-Z ]+$/,
+    match: /^[a-zA-Z]+$/,
   },
   groups: [{type: mongoose.Schema.Types.ObjectId, ref: 'Group'}],
   games: [{type: mongoose.Schema.Types.ObjectId, ref: 'Game'}],

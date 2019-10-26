@@ -53,7 +53,7 @@ router.patch('/', auth.required, function(req, res) {
         if (status != 200) {
           res.status(status).json(body);
         } else {
-          res.status(status).json({'user': body.user.AuthView()});
+          res.status(status).json({'user': body.user.OwnProfileView()});
         }
       });
 });

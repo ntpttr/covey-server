@@ -326,6 +326,7 @@ function addGame(Group, identifier, actingUser, gameProperties, callback) {
     {
       'identifier': identifier,
       'members.username': actingUser,
+      'games.name': {'$ne': name},
     }, 
     {
       $addToSet: {
