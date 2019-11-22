@@ -3,7 +3,9 @@
 const express = require('express');
 const router = new express.Router();
 
-// Login
+/**
+ * Login
+ */
 router.post('/login', function(req, res, next) {
   const userController = req.userController;
 
@@ -18,7 +20,9 @@ router.post('/login', function(req, res, next) {
   });
 });
 
-// Confirm user account
+/**
+ * Confirm a user account
+ */
 router.get('/confirm/:token', function(req, res) {
   const User = req.User;
   const ValidationKey = req.ValidationKey;
@@ -31,7 +35,9 @@ router.get('/confirm/:token', function(req, res) {
       });
 });
 
-// Resend a user confirmation email
+/**
+ * Resend a user confirmation email
+ */
 router.post('/resend/:username', function(req, res) {
   const User = req.User;
   const ValidationKey = req.ValidationKey;
@@ -45,7 +51,9 @@ router.post('/resend/:username', function(req, res) {
       });
 });
 
-// Create new user
+/**
+ * Create a new user
+ */
 router.post('/', function(req, res) {
   const User = req.User;
   const ValidationKey = req.ValidationKey;
@@ -65,7 +73,9 @@ router.post('/', function(req, res) {
       });
 });
 
-// Get user profile
+/**
+ * Get a user profile
+ */
 router.get('/:username', function(req, res) {
   const User = req.User;
   const userController = req.userController;

@@ -4,7 +4,9 @@ const express = require('express');
 const auth = require('../auth');
 const router = new express.Router();
 
-// Create new group
+/**
+ * Create a new group
+ */
 router.post('/', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
@@ -24,7 +26,9 @@ router.post('/', auth.required, function(req, res) {
   });
 });
 
-// Get specific group
+/**
+ * Get specific group that the user is authorized to view
+ */
 router.get('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
@@ -43,7 +47,9 @@ router.get('/:identifier', auth.required, function(req, res) {
   });
 });
 
-// Update an existing group
+/**
+ * Update an existing group
+ */
 router.patch('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;
@@ -67,7 +73,9 @@ router.patch('/:identifier', auth.required, function(req, res) {
       });
 });
 
-// Delete group
+/**
+ * Delete a group
+ */
 router.delete('/:identifier', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
@@ -85,7 +93,9 @@ router.delete('/:identifier', auth.required, function(req, res) {
       });
 });
 
-// Add user to group
+/**
+ * Add a new user to a group
+ */
 router.post('/:identifier/users', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
@@ -107,7 +117,9 @@ router.post('/:identifier/users', auth.required, function(req, res) {
       });
 });
 
-// Remove user from group
+/**
+ * Remove a user from a group
+ */
 router.delete('/:identifier/users', auth.required, function(req, res) {
   const Group = req.Group;
   const User = req.User;
@@ -129,7 +141,9 @@ router.delete('/:identifier/users', auth.required, function(req, res) {
       });
 });
 
-// Add game to group
+/**
+ * Add a game to a group
+ */
 router.post('/:identifier/games', auth.required, function(req, res, next) {
   const Group = req.Group;
   const groupController = req.groupController;
@@ -147,7 +161,9 @@ router.post('/:identifier/games', auth.required, function(req, res, next) {
       });
 });
 
-// Remove game from group
+/**
+ * Remove a game from a group
+ */
 router.delete('/:identifier/games', auth.required, function(req, res) {
   const Group = req.Group;
   const groupController = req.groupController;

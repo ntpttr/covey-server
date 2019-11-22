@@ -4,7 +4,9 @@ const express = require('express');
 const auth = require('../auth');
 const router = new express.Router();
 
-// Create new play
+/**
+ * Create a new play
+ */
 router.post('/', auth.required, function(req, res) {
   const Play = req.Play;
   const Group = req.Group;
@@ -29,7 +31,9 @@ router.post('/', auth.required, function(req, res) {
       });
 });
 
-// Get all plays for a group
+/**
+ * Get all plays for a group
+ */
 router.get('/:groupIdent', auth.required, function(req, res) {
   const Play = req.Play;
   const Group = req.Group;
@@ -44,7 +48,9 @@ router.get('/:groupIdent', auth.required, function(req, res) {
   });
 });
 
-// Delete a play
+/**
+ * Delete a play
+ */
 router.delete('/:playId', auth.required, function(req, res) {
   const Play = req.Play;
   const Group = req.Group;

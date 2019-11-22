@@ -3,7 +3,9 @@
 const express = require('express');
 const router = new express.Router();
 
-// Get game by name from BoardGameGeek's API
+/**
+ * Get game by name from BoardGameGeek's API
+ */
 router.get('/:name', function(req, res) {
   const gameController = req.gameController;
   const name = req.params.name;
@@ -13,7 +15,9 @@ router.get('/:name', function(req, res) {
   });
 });
 
-// Search bgg for a game
+/**
+ * Search bgg for a game
+ */
 router.get('/search/:name', function(req, res) {
   const gameController = req.gameController;
   const name = req.params.name;

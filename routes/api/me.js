@@ -4,7 +4,9 @@ const express = require('express');
 const auth = require('../auth');
 const router = new express.Router();
 
-// Get current logged in user profile
+/**
+ * Get current logged in user profile
+ */
 router.get('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
@@ -21,7 +23,9 @@ router.get('/', auth.required, function(req, res) {
   });
 });
 
-// Get current logged in user groups
+/**
+ * Get current logged in user groups
+ */
 router.get('/groups', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
@@ -38,7 +42,9 @@ router.get('/groups', auth.required, function(req, res) {
   });
 });
 
-// Update an existing user
+/**
+ * Update an existing user
+ */
 router.patch('/', auth.required, function(req, res) {
   const User = req.User;
   const userController = req.userController;
@@ -58,7 +64,9 @@ router.patch('/', auth.required, function(req, res) {
       });
 });
 
-// Delete user
+/**
+ * Delete the authorized user
+ */
 router.delete('/', auth.required, function(req, res) {
   const User = req.User;
   const Group = req.Group;

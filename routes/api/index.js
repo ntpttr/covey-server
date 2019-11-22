@@ -15,6 +15,7 @@ const groupController = require('../../controllers/group');
 const gameController = require('../../controllers/game');
 const playController = require('../../controllers/play');
 
+// Add /me routes
 router.use('/me', function(req, res, next) {
   req.User = User;
   req.Group = Group;
@@ -23,6 +24,7 @@ router.use('/me', function(req, res, next) {
   next();
 }, require('./me'));
 
+// Add /users routes
 router.use('/users', function(req, res, next) {
   req.User = User;
   req.Group = Group;
@@ -31,6 +33,7 @@ router.use('/users', function(req, res, next) {
   next();
 }, require('./user'));
 
+// Add /groups routes
 router.use('/groups', function(req, res, next) {
   req.Group = Group;
   req.User = User;
@@ -40,11 +43,13 @@ router.use('/groups', function(req, res, next) {
   next();
 }, require('./group'));
 
+// Add /games routes
 router.use('/games', function(req, res, next) {
   req.gameController = gameController;
   next();
 }, require('./game'));
 
+// Add /plays routes
 router.use('/plays', function(req, res, next) {
   req.Play = Play;
   req.Group = Group;

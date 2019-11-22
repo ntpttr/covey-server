@@ -7,6 +7,9 @@ const jwt = require('jsonwebtoken');
 const secret = require('../config').secret;
 const uniqueValidator = require('mongoose-unique-validator');
 
+/**
+ * The schema for indidual users.
+ */
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -35,9 +38,13 @@ const UserSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
 }, {timestamps: true});
-
 UserSchema.plugin(uniqueValidator);
 
+/**
+ * Checks that the provided password matches the one stored for the user.
+ * @param {string} password - The password to check against the user.
+ * @returns {boolean} True if the password matches, false otherwise.
+ */
 UserSchema.methods.validPassword = function(password) {
   const hash = crypto.pbkdf2Sync(
       password,
@@ -46,6 +53,10 @@ UserSchema.methods.validPassword = function(password) {
   return this.hash === hash;
 };
 
+/**
+ * Sets the user password
+ * @param {string} - THe password to set.
+ */
 UserSchema.methods.setPassword = function(password) {
   this.salt = crypto.randomBytes(16).toString('hex');
   this.hash = crypto.pbkdf2Sync(
@@ -56,6 +67,10 @@ UserSchema.methods.setPassword = function(password) {
       'sha512').toString('hex');
 };
 
+/**
+ * Generates a new JWT token for the user.
+ * @returns {string} The JWT string.
+ */
 UserSchema.methods.generateJWT = function() {
   const today = new Date();
   const exp = new Date(today);
@@ -68,6 +83,10 @@ UserSchema.methods.generateJWT = function() {
   }, secret);
 };
 
+/**
+ * The view returned when requesting user auth,
+ * including the username and a new JWT token.
+ */
 UserSchema.methods.AuthView = function() {
   return {
     username: this.username,
@@ -75,6 +94,9 @@ UserSchema.methods.AuthView = function() {
   };
 };
 
+/**
+ * The view of a user looking at their own profile.
+ */
 UserSchema.methods.OwnProfileView = function() {
   return {
     username: this.username,
@@ -84,6 +106,9 @@ UserSchema.methods.OwnProfileView = function() {
   };
 };
 
+/**
+ * The more restricted view of a user viewing another user's profile.
+ */
 UserSchema.methods.ProfileView = function() {
   return {
     username: this.username,

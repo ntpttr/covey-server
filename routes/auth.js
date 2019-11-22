@@ -4,7 +4,7 @@ const secret = require('../config').secret;
 /**
  * Gets the token from an incoming header
  * @param {*} req The request object
- * @return {*} The token
+ * @return {string} The token
  */
 function getTokenFromHeader(req) {
   if (req.headers.authorization &&
