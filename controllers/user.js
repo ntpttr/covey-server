@@ -56,13 +56,12 @@ function authenticate(creds, callback) {
 
 /**
  * Confirm a user account
- * @param {schema} User - The user mongoose schema.
- * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} token - The confirmation token.
  * @param {function} callback - The callback function.
  */
-function confirmUser(User, ValidationKey, token, callback) {
-  ValidationKey.findOne({token: token}, function(err, key) {
+function confirmUser(models, token, callback) {
+  models.ValidationKey.findOne({token: token}, function(err, key) {
     if (err) {
       callback(500, {
         'error': err,
@@ -79,7 +78,7 @@ function confirmUser(User, ValidationKey, token, callback) {
       return;
     }
 
-    User.findOne({_id: key.userId}, function(err, user) {
+    models.User.findOne({_id: key.userId}, function(err, user) {
       if (err) {
         callback(500, {
           'message': err,
@@ -124,14 +123,13 @@ function confirmUser(User, ValidationKey, token, callback) {
 
 /**
  * Resend a confirmation email to a given user.
- * @param {schema} User - The user mongoose schema.
- * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username to resend the validation email to.
  * @param {string} host = The host for the email verification URL.
  * @param {function} callback - The callback function.
  */
-function resendConfirmation(User, ValidationKey, username, host, callback) {
-  User.findOne({username: username}, function(err, user) {
+function resendConfirmation(models, username, host, callback) {
+  models.User.findOne({username: username}, function(err, user) {
     if (err) {
       callback(500, {
         'error': err,
@@ -156,19 +154,18 @@ function resendConfirmation(User, ValidationKey, username, host, callback) {
       return;
     }
 
-    sendConfirmationEmail(ValidationKey, user, host, callback);
+    sendConfirmationEmail(models, user, host, callback);
   });
 }
 
 /**
  * Create a new user.
- * @param {schema} User - The user mongoose schema.
- * @param {schema} ValidationKey = The validation key mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {object} properties - The user properties.
  * @param {string} host = The host for the email verification URL.
  * @param {function} callback - The callback function.
  */
-function createUser(User, ValidationKey, properties, host, callback) {
+function createUser(models, properties, host, callback) {
   const {email, username, password} = properties;
 
   if (!email) {
@@ -196,7 +193,7 @@ function createUser(User, ValidationKey, properties, host, callback) {
     });
   }
 
-  const user = new User({
+  const user = new models.User({
     email: email,
     username: username,
   });
@@ -232,7 +229,7 @@ function createUser(User, ValidationKey, properties, host, callback) {
       }
     }
 
-    sendConfirmationEmail(ValidationKey, user, host, function(sendStatus, sendBody) {
+    sendConfirmationEmail(models, user, host, function(sendStatus, sendBody) {
       if (sendStatus != 200) {
         callback(200, {
           'message': 'User created but system failed to send confirmation email. Try again later.',
@@ -248,12 +245,12 @@ function createUser(User, ValidationKey, properties, host, callback) {
 
 /**
  * Get a user based on their username.
- * @param {schema} User - The user mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username to get.
  * @param {function} callback - The callback function.
  */
-function getUserProfile(User, username, callback) {
-  User.findOne({username: username}).
+function getUserProfile(models, username, callback) {
+  models.User.findOne({username: username}).
       exec(function(err, user) {
         if (err) {
           callback(500, {
@@ -273,12 +270,12 @@ function getUserProfile(User, username, callback) {
 
 /**
  * Get a user's joined groups
- * @param {schema} User - The user mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username to get.
  * @param {function} callback - The callback function.
  */
-function getUserGroups(User, username, callback) {
-  User.findOne({username: username}).
+function getUserGroups(models, username, callback) {
+  models.User.findOne({username: username}).
       populate('groups').
       exec(function(err, user) {
         if (err) {
@@ -305,12 +302,12 @@ function getUserGroups(User, username, callback) {
 
 /**
  * Update an existing user.
- * @param {schema} User - The user mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The name of the user to update.
  * @param {object} properties - The properties for the user.
  * @param {function} callback - The callback function.
  */
-function updateUser(User, username, properties, callback) {
+function updateUser(models, username, properties, callback) {
   if (!properties.name && !properties.email && !properties.password) {
     callback(400, {
       'message': 'Must provide a valid property to update.',
@@ -319,7 +316,7 @@ function updateUser(User, username, properties, callback) {
     return;
   }
 
-  getUserProfile(User, username, function(status, body) {
+  getUserProfile(models, username, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
@@ -378,13 +375,13 @@ function updateUser(User, username, properties, callback) {
 
 /**
  * Add a reference to a group
- * @param {schema} User - The user mongoose schema
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username of the user to update.
  * @param {string} groupId - The group Id to add.
  * @param {function} callback - The callback function.
  */
-function addGroupLink(User, username, groupId, callback) {
-  User.findOneAndUpdate(
+function addGroupLink(models, username, groupId, callback) {
+  models.User.findOneAndUpdate(
     {username: username},
     {$addToSet: {groups: groupId}}, 
     {new: true}
@@ -403,13 +400,13 @@ function addGroupLink(User, username, groupId, callback) {
 
 /**
  * Remove a reference to a group
- * @param {schema} User - The user mongoose schema
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username of the user to update.
  * @param {string} groupId - The group mongoose Id.
  * @param {function} callback - The callback function.
  */
-function removeGroupLink(User, username, groupId, callback) {
-  User.findOneAndUpdate(
+function removeGroupLink(models, username, groupId, callback) {
+  models.User.findOneAndUpdate(
     {username: username},
     {$pull: {groups: groupId}},
     {new: true}
@@ -428,13 +425,12 @@ function removeGroupLink(User, username, groupId, callback) {
 
 /**
  * Delete a user.
- * @param {schema} User - The user mongoose schema.
- * @param {schema} Group - The group mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} username - The username of the user to delete.
  * @param {function} callback - The callback function.
  */
-function deleteUser(User, Group, username, callback) {
-  User.findOne(
+function deleteUser(models, username, callback) {
+  models.User.findOne(
     {username: username}
   ).populate('groups').exec(function(err, user) {
     if (err) {
@@ -476,14 +472,14 @@ function deleteUser(User, Group, username, callback) {
 
 /**
  * Send a validation email to a user.
- * @param {schema} ValidationKey - The validation key mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {Object} user - The user to send the validation email to.
  * @param {string} host = The host for the email verification URL.
  * @param {function} callback - The callback function.
  */
-function sendConfirmationEmail(ValidationKey, user, host, callback) {
+function sendConfirmationEmail(models, user, host, callback) {
   // Create a validation key for this user
-  const validationKey = new ValidationKey({
+  const validationKey = new models.ValidationKey({
     userId: user._id,
     token: crypto.randomBytes(16).toString('hex'),
   });

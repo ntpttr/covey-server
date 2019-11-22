@@ -8,20 +8,16 @@ const router = new express.Router();
  * Create a new play
  */
 router.post('/', auth.required, function(req, res) {
-  const Play = req.Play;
-  const Group = req.Group;
-  const playController = req.playController;
-  const groupController = req.groupController;
-
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const gameName = req.body.game;
   const groupIdent = req.body.group;
   const players = req.body.players;
 
-  playController.addPlay(
-      Play,
-      Group,
-      groupController,
+  controllers.play.addPlay(
+      models,
+      controllers,
       actingUser,
       gameName,
       groupIdent,
@@ -35,15 +31,12 @@ router.post('/', auth.required, function(req, res) {
  * Get all plays for a group
  */
 router.get('/:groupIdent', auth.required, function(req, res) {
-  const Play = req.Play;
-  const Group = req.Group;
-  const playController = req.playController;
-  const groupController = req.groupController;
-
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const groupIdent = req.params.groupIdent;
 
-  playController.getGroupPlays(Play, Group, groupController, actingUser, groupIdent, function(status, body) {
+  controllers.play.getGroupPlays(models, controllers, actingUser, groupIdent, function(status, body) {
     res.status(status).json(body);
   });
 });
@@ -52,16 +45,13 @@ router.get('/:groupIdent', auth.required, function(req, res) {
  * Delete a play
  */
 router.delete('/:playId', auth.required, function(req, res) {
-  const Play = req.Play;
-  const Group = req.Group;
-  const playController = req.playController;
-  const groupController = req.groupController;
-
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const playId = req.params.playId;
   const groupIdent = req.body.group;
 
-  playController.deletePlay(Play, Group, groupController, actingUser, groupIdent, playId, function(status, body) {
+  controllers.play.deletePlay(models, controllers, actingUser, groupIdent, playId, function(status, body) {
     res.status(status).json(body);
   });
 });

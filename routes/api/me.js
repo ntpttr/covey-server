@@ -8,11 +8,11 @@ const router = new express.Router();
  * Get current logged in user profile
  */
 router.get('/', auth.required, function(req, res) {
-  const User = req.User;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const username = req.payload.username;
 
-  userController.getUserProfile(User, username, function(status, body) {
+  controllers.user.getUserProfile(models, username, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
@@ -27,11 +27,11 @@ router.get('/', auth.required, function(req, res) {
  * Get current logged in user groups
  */
 router.get('/groups', auth.required, function(req, res) {
-  const User = req.User;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const username = req.payload.username;
 
-  userController.getUserGroups(User, username, function(status, body) {
+  controllers.user.getUserGroups(models, username, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
@@ -46,13 +46,13 @@ router.get('/groups', auth.required, function(req, res) {
  * Update an existing user
  */
 router.patch('/', auth.required, function(req, res) {
-  const User = req.User;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const properties = req.body;
   const username = req.payload.username;
 
-  userController.updateUser(
-      User,
+  controllers.user.updateUser(
+      models,
       username,
       properties,
       function(status, body) {
@@ -68,14 +68,12 @@ router.patch('/', auth.required, function(req, res) {
  * Delete the authorized user
  */
 router.delete('/', auth.required, function(req, res) {
-  const User = req.User;
-  const Group = req.Group;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const username = req.payload.username;
 
-  userController.deleteUser(
-      User,
-      Group,
+  controllers.user.deleteUser(
+      models,
       username,
       function(status, body) {
         res.status(status).json(body);

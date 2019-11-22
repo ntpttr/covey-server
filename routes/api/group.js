@@ -8,14 +8,12 @@ const router = new express.Router();
  * Create a new group
  */
 router.post('/', auth.required, function(req, res) {
-  const Group = req.Group;
-  const User = req.User;
-  const groupController = req.groupController;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const creator = req.payload.username;
   const properties = req.body;
 
-  groupController.createGroup(Group, User, creator, userController, properties, function(status, body) {
+  controllers.group.createGroup(models, controllers, creator, properties, function(status, body) {
     if (status != 201) {
       res.status(status).json(body);
     } else {
@@ -30,12 +28,12 @@ router.post('/', auth.required, function(req, res) {
  * Get specific group that the user is authorized to view
  */
 router.get('/:identifier', auth.required, function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
 
-  groupController.getGroup(Group, identifier, actingUser, function(status, body) {
+  controllers.group.getGroup(models, identifier, actingUser, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
@@ -51,14 +49,14 @@ router.get('/:identifier', auth.required, function(req, res) {
  * Update an existing group
  */
 router.patch('/:identifier', auth.required, function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const properties = req.body;
 
-  groupController.updateGroup(
-      Group,
+  controllers.group.updateGroup(
+      models,
       identifier,
       actingUser,
       properties,
@@ -77,15 +75,13 @@ router.patch('/:identifier', auth.required, function(req, res) {
  * Delete a group
  */
 router.delete('/:identifier', auth.required, function(req, res) {
-  const Group = req.Group;
-  const User = req.User;
-  const groupController = req.groupController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
 
-  groupController.deleteGroup(
-      Group,
-      User,
+  controllers.group.deleteGroup(
+      models,
       identifier,
       actingUser,
       function(status, body) {
@@ -97,18 +93,15 @@ router.delete('/:identifier', auth.required, function(req, res) {
  * Add a new user to a group
  */
 router.post('/:identifier/users', auth.required, function(req, res) {
-  const Group = req.Group;
-  const User = req.User;
-  const groupController = req.groupController;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
-  groupController.addUser(
-      Group,
-      User,
-      userController,
+  controllers.group.addUser(
+      models,
+      controllers,
       identifier,
       actingUser,
       username,
@@ -121,18 +114,15 @@ router.post('/:identifier/users', auth.required, function(req, res) {
  * Remove a user from a group
  */
 router.delete('/:identifier/users', auth.required, function(req, res) {
-  const Group = req.Group;
-  const User = req.User;
-  const groupController = req.groupController;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
-  groupController.deleteUser(
-      Group,
-      User,
-      userController,
+  controllers.group.deleteUser(
+      models,
+      controllers,
       identifier,
       actingUser,
       username,
@@ -145,14 +135,14 @@ router.delete('/:identifier/users', auth.required, function(req, res) {
  * Add a game to a group
  */
 router.post('/:identifier/games', auth.required, function(req, res, next) {
-  const Group = req.Group;
-  const groupController = req.groupController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const gameProperties = req.body;
 
-  groupController.addGame(
-      Group,
+  controllers.group.addGame(
+      models,
       identifier,
       actingUser,
       gameProperties,
@@ -165,14 +155,14 @@ router.post('/:identifier/games', auth.required, function(req, res, next) {
  * Remove a game from a group
  */
 router.delete('/:identifier/games', auth.required, function(req, res) {
-  const Group = req.Group;
-  const groupController = req.groupController;
+  const models = req.models;
+  const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const gameName = req.body.game;
 
-  groupController.deleteGame(
-      Group,
+  controllers.group.deleteGame(
+      models,
       identifier,
       actingUser,
       gameName,

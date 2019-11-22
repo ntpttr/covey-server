@@ -2,15 +2,14 @@
 
 /**
  * Create a new group.
- * @param {schema} Group - The group mongoose schema.
- * @param {schema} User - The user mongoose schema.
+ * @param {*} models - The mongoose schemas.
+ * @param {*} controllers - The controllers.
  * @param {string} creator - The group creator.
- * @param {controller} userController - The user controller object.
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function createGroup(Group, User, creator, userController, properties, callback) {
-  userController.getUserProfile(User, creator, function(userStatus, userBody) {
+function createGroup(models, controllers, creator, properties, callback) {
+  controllers.user.getUserProfile(models, creator, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
       return;
@@ -22,7 +21,7 @@ function createGroup(Group, User, creator, userController, properties, callback)
       description,
     } = properties;
 
-    group = new Group({
+    group = new models.Group({
       'identifier': identifier,
       'displayName': displayName,
       'description': description,
@@ -69,10 +68,10 @@ function createGroup(Group, User, creator, userController, properties, callback)
       }
     });
 
-    userController.addGroupLink(
-      User, user.username, group._id, function(addStatus, addBody) {
+    controllers.user.addGroupLink(
+      models, user.username, group._id, function(addStatus, addBody) {
         if (addStatus != 200) {
-          deleteGroup(Group, User, group.identifier, function(deleteStatus, deleteBody) {
+          deleteGroup(models, group.identifier, function(deleteStatus, deleteBody) {
             callback(500, {
               'message': 'Something went wrong adding creator to the group.',
             });
@@ -91,13 +90,13 @@ function createGroup(Group, User, creator, userController, properties, callback)
 /**
  * Get groups with a specific identifier from the database
  * if the calling user is authorized for the group.
- * @param {schema} Group - The group mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {function} callback - The callback function.
  */
-function getGroup(Group, identifier, actingUser, callback) {
-  Group.findOne({
+function getGroup(models, identifier, actingUser, callback) {
+  models.Group.findOne({
     'identifier': identifier,
     'members.username': actingUser,
   }).
@@ -128,14 +127,14 @@ function getGroup(Group, identifier, actingUser, callback) {
 
 /**
  * Update an existing group.
- * @param {schema} Group - The group mongoose schema.
+ * @param {*} models - The mongoose schemaa.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {object} properties - The group properties.
  * @param {function} callback - The callback function.
  */
-function updateGroup(Group, identifier, actingUser, properties, callback) {
-  getGroup(Group, identifier, actingUser, function(status, body) {
+function updateGroup(models, identifier, actingUser, properties, callback) {
+  getGroup(models, identifier, actingUser, function(status, body) {
     if (status != 200) {
       callback(status, body);
       return;
@@ -159,16 +158,15 @@ function updateGroup(Group, identifier, actingUser, properties, callback) {
 
 /**
  * Add a user to a group.
- * @param {schema} Group - The group mongoose schema.
- * @param {schema} User - The user mongoose schema.
- * @param {controller} userController - the user controller object.
+ * @param {*} models - The mongoose schemas.
+ * @param {*} controllers - The controllers.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(Group, User, userController, identifier, actingUser, username, callback) {
-  userController.getUserProfile(User, username, function(userStatus, userBody) {
+function addUser(models, controllers, identifier, actingUser, username, callback) {
+  controllers.user.getUserProfile(models, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
       return;
@@ -176,7 +174,7 @@ function addUser(Group, User, userController, identifier, actingUser, username, 
 
     user = userBody.user;
 
-    Group.findOneAndUpdate(
+    models.Group.findOneAndUpdate(
       {
         'identifier': identifier,
         'members.username': actingUser,
@@ -207,8 +205,8 @@ function addUser(Group, User, userController, identifier, actingUser, username, 
         return;
       }
 
-      userController.addGroupLink(
-          User, user.username, group._id, function(addStatus, addBody) {
+      controllers.user.addGroupLink(
+          models, user.username, group._id, function(addStatus, addBody) {
             if (addStatus != 200) {
               callback(addStatus, addBody);
               return;
@@ -225,23 +223,22 @@ function addUser(Group, User, userController, identifier, actingUser, username, 
 
 /**
  * Remove a user from a group.
- * @param {schema} Group - The group mongoose schema.
- * @param {schema} User - The user mongoose schema.
- * @param {controller} userController - The user controller object.
+ * @param {*} models - The mongoose schemas.
+ * @param {*} controllers - The controllers.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
-function deleteUser(Group, User, userController, identifier, actingUser, username, callback) {
-  userController.getUserProfile(User, username, function(userStatus, userBody) {
+function deleteUser(models, controllers, identifier, actingUser, username, callback) {
+  controllers.user.getUserProfile(models, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
       return;
     }
 
     user = userBody.user;
-    Group.findOne({
+    models.Group.findOne({
         'identifier': identifier,
         'members.username': actingUser,
     }).exec(function(err, group) {
@@ -279,8 +276,8 @@ function deleteUser(Group, User, userController, identifier, actingUser, usernam
 
       group.save();
 
-      userController.removeGroupLink(
-          User, user.username, group._id, function(removeStatus, removeBody) {
+      controllers.user.removeGroupLink(
+          models, user.username, group._id, function(removeStatus, removeBody) {
             if (removeStatus != 200) {
               callback(addStatus, removeBody);
               return;
@@ -297,13 +294,13 @@ function deleteUser(Group, User, userController, identifier, actingUser, usernam
 
 /**
  * Add a game to the group.
- * @param {schema} Group - The group mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {string} gameProperties - The game properties.
  * @param {function} callback - The callback function.
  */
-function addGame(Group, identifier, actingUser, gameProperties, callback) {
+function addGame(models, identifier, actingUser, gameProperties, callback) {
   const {
     name,
     description,
@@ -322,7 +319,7 @@ function addGame(Group, identifier, actingUser, gameProperties, callback) {
     return;
   }
 
-  Group.findOneAndUpdate(
+  models.Group.findOneAndUpdate(
     {
       'identifier': identifier,
       'members.username': actingUser,
@@ -368,14 +365,14 @@ function addGame(Group, identifier, actingUser, gameProperties, callback) {
 
 /**
  * Remove a game from a group.
- * @param {schema} Group - The group mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user making the get group request.
  * @param {string} gameName - The game name.
  * @param {function} callback - The callback funtion.
  */
-function deleteGame(Group, identifier, actingUser, gameName, callback) {
-  Group.findOneAndUpdate({
+function deleteGame(models, identifier, actingUser, gameName, callback) {
+  models.Group.findOneAndUpdate({
       'identifier': identifier,
       'members.username': actingUser,
     },
@@ -412,14 +409,13 @@ function deleteGame(Group, identifier, actingUser, gameName, callback) {
 
 /**
  * Delete a group.
- * @param {schema} Group - The group mongoose schema.
- * @param {schema} User - The user mongoose schema.
+ * @param {*} models - The mongoose schemas.
  * @param {string} identifier - The group identifier.
  * @param {string} actingUser - The user deleting the group.
  * @param {function} callback - The callback function.
  */
-function deleteGroup(Group, User, identifier, actingUser, callback) {
-  Group.findOne({
+function deleteGroup(models, identifier, actingUser, callback) {
+  models.Group.findOne({
       'identifier': identifier,
       'members.username': actingUser,
     }).populate('members.link').exec(function(err, group) {
@@ -434,7 +430,7 @@ function deleteGroup(Group, User, identifier, actingUser, callback) {
     if (group) {
       // First delete this group from all user lists.
       group.members.forEach(function(member) {
-        User.update(
+        models.User.update(
           {_id: member.link._id},
           {$pull: {groups: group._id}}
         ).exec(function(err) {

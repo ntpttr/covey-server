@@ -7,9 +7,9 @@ const router = new express.Router();
  * Login
  */
 router.post('/login', function(req, res, next) {
-  const userController = req.userController;
+  const controllers = req.controllers;
 
-  userController.authenticate(req, function(status, body) {
+  controllers.user.authenticate(req, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
@@ -24,13 +24,12 @@ router.post('/login', function(req, res, next) {
  * Confirm a user account
  */
 router.get('/confirm/:token', function(req, res) {
-  const User = req.User;
-  const ValidationKey = req.ValidationKey;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const token = req.params.token;
 
-  userController.confirmUser(
-      User, ValidationKey, token, function(status, body) {
+  controllers.user.confirmUser(
+      models, token, function(status, body) {
         res.status(status).json(body);
       });
 });
@@ -39,14 +38,13 @@ router.get('/confirm/:token', function(req, res) {
  * Resend a user confirmation email
  */
 router.post('/resend/:username', function(req, res) {
-  const User = req.User;
-  const ValidationKey = req.ValidationKey;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const username = req.params.username;
   const host = req.headers.host;
 
-  userController.resendConfirmation(
-      User, ValidationKey, username, host, function(status, body) {
+  controllers.user.resendConfirmation(
+      models, username, host, function(status, body) {
         res.status(status).json(body);
       });
 });
@@ -55,14 +53,13 @@ router.post('/resend/:username', function(req, res) {
  * Create a new user
  */
 router.post('/', function(req, res) {
-  const User = req.User;
-  const ValidationKey = req.ValidationKey;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const properties = req.body;
   const host = req.headers.host;
 
-  userController.createUser(
-      User, ValidationKey, properties, host, function(status, body) {
+  controllers.user.createUser(
+      models, properties, host, function(status, body) {
         if (status != 201) {
           res.status(status).json(body);
         } else {
@@ -77,11 +74,11 @@ router.post('/', function(req, res) {
  * Get a user profile
  */
 router.get('/:username', function(req, res) {
-  const User = req.User;
-  const userController = req.userController;
+  const models = req.models;
+  const controllers = req.controllers;
   const username = req.params.username;
 
-  userController.getUserProfile(User, username, function(status, body) {
+  controllers.user.getUserProfile(models, username, function(status, body) {
     if (status != 200) {
       res.status(status).json(body);
     } else {
