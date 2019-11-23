@@ -444,7 +444,7 @@ function deleteUser(models, username, callback) {
     if (user) {
       // First delete this group from all user lists.
       user.groups.forEach(function(group) {
-        Group.update({
+        models.Group.update({
           _id: group._id,
         }, {
           $pull: {
