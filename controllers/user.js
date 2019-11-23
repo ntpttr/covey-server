@@ -38,7 +38,7 @@ function authenticate(creds, callback) {
 
     if (user) {
       if (!user.isVerified) {
-        callback(401, {
+        callback(403, {
           'message': 'Your account has not been verified.',
         });
 
@@ -49,7 +49,7 @@ function authenticate(creds, callback) {
         'user': user,
       });
     } else {
-      callback(401, info);
+      callback(403, info);
     }
   })(creds, callback);
 };
