@@ -165,7 +165,7 @@ function updateGroup(models, identifier, actingUser, properties, callback) {
  * @param {string} username - The username to add.
  * @param {function} callback - The callback function.
  */
-function addUser(models, controllers, identifier, actingUser, username, callback) {
+function addMember(models, controllers, identifier, actingUser, username, callback) {
   controllers.user.getUserProfile(models, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -230,7 +230,7 @@ function addUser(models, controllers, identifier, actingUser, username, callback
  * @param {string} username - The username to remove.
  * @param {function} callback - The callback function.
  */
-function deleteUser(models, controllers, identifier, actingUser, username, callback) {
+function removeMember(models, controllers, identifier, actingUser, username, callback) {
   controllers.user.getUserProfile(models, username, function(userStatus, userBody) {
     if (userStatus != 200) {
       callback(userStatus, userBody);
@@ -457,8 +457,8 @@ module.exports = {
   createGroup,
   getGroup,
   updateGroup,
-  addUser,
-  deleteUser,
+  addMember,
+  removeMember,
   addGame,
   deleteGame,
   deleteGroup,

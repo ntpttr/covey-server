@@ -90,16 +90,16 @@ router.delete('/:identifier', auth.required, function(req, res) {
 });
 
 /**
- * Add a new user to a group
+ * Add a new member to a group
  */
-router.post('/:identifier/users', auth.required, function(req, res) {
+router.post('/:identifier/members', auth.required, function(req, res) {
   const models = req.models;
   const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
-  controllers.group.addUser(
+  controllers.group.addMember(
       models,
       controllers,
       identifier,
@@ -111,16 +111,16 @@ router.post('/:identifier/users', auth.required, function(req, res) {
 });
 
 /**
- * Remove a user from a group
+ * Remove a member from a group
  */
-router.delete('/:identifier/users', auth.required, function(req, res) {
+router.delete('/:identifier/members', auth.required, function(req, res) {
   const models = req.models;
   const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
 
-  controllers.group.deleteUser(
+  controllers.group.removeMember(
       models,
       controllers,
       identifier,
