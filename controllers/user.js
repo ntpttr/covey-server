@@ -442,19 +442,25 @@ function deleteUser(models, username, callback) {
     }
 
     if (user) {
-      // First delete this group from all user lists.
+      // First user this group from all group lists.
+      // If the user is the last member of a group,
+      // delete the group.
       user.groups.forEach(function(group) {
-        models.Group.update({
-          _id: group._id,
-        }, {
-          $pull: {
-            users: user._id,
-          },
-        }).exec(function(err) {
-          if (err) {
-            console.log(err);
-          }
-        });
+        if (group.members.length >= 1) {
+          models.Group.update({
+            _id: group._id,
+          }, {
+            $pull: {
+              members: user._id,
+            },
+          }).exec(function(err) {
+            if (err) {
+              console.log(err);
+            }
+          });
+        } else {
+          group.remove();
+        }
       });
 
       user.remove();
