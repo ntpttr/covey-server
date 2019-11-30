@@ -31,6 +31,7 @@ function addPlay(models, controllers, actingUser, gameName, groupIdent, players,
       callback(400, {
         'message': "Game " + gameName + " must be added to the group to register plays",
       });
+
       return;
     }
 
@@ -45,6 +46,7 @@ function addPlay(models, controllers, actingUser, gameName, groupIdent, players,
         callback(500, {
           'error': err,
         });
+
         return;
       }
   

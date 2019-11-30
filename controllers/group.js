@@ -35,6 +35,8 @@ function createGroup(models, controllers, creator, properties, callback) {
       'link': user,
     });
 
+    group.owners.push(user.username);
+
     group.save(function(err) {
       if (err) {
         if (err.errors && err.errors.identifier) {
@@ -109,7 +111,9 @@ function getGroup(models, identifier, actingUser, callback) {
       } else if (group) {
         const members = [];
         group.members.forEach(function(member) {
-          members.push(member.link.ProfileView());
+          let memberProfile = member.link.ProfileView();
+          memberProfile.isOwner = group.owners.includes(member.username) ? true : false;
+          members.push(memberProfile);
         });
         callback(200, {
           'group': group,
@@ -174,21 +178,12 @@ function addMember(models, controllers, identifier, actingUser, username, callba
 
     user = userBody.user;
 
-    models.Group.findOneAndUpdate(
-      {
+    // Add the new member to the group, provided that the group exists and that
+    // the acting user is a member and owner of the group.
+    models.Group.findOne({
         'identifier': identifier,
         'members.username': actingUser,
-      },
-      {
-        '$addToSet': {
-          'members': {
-            'username': user.username,
-            'link': user,
-          },
-         },
-      },
-      {new: true}
-    ).exec(function(err, group) {
+    }).exec(function(err, group) {
       if (err) {
         callback(500, {
           'error': err,
@@ -205,7 +200,42 @@ function addMember(models, controllers, identifier, actingUser, username, callba
         return;
       }
 
-      controllers.user.addGroupLink(
+      // If the acting user is not an owner, don't allow them to add
+      // new members to the group.
+      if (!group.owners.includes(actingUser)) {
+        callback(403, {
+          'message': 'Only group owners can add new members.',
+        });
+
+        return;
+      }
+
+      // If the member being added is already in the group, don't add
+      // them again.
+      for (let i = 0; i < group.members.length; i++) {
+        if (group.members[i].username == user.username) {
+          callback(200, {
+            'message': 'User ' + user.username + ' already ' +
+                        'a member of group ' + identifier
+          });
+
+          return;
+        }
+      }
+
+      group.members.push({
+        'username': user.username,
+        'link': user,
+      });
+
+      group.save(function(err) {
+        if (err) {
+          callback(500, {
+            'error': err,
+          });
+        }
+
+        controllers.user.addGroupLink(
           models, user.username, group._id, function(addStatus, addBody) {
             if (addStatus != 200) {
               callback(addStatus, addBody);
@@ -217,6 +247,7 @@ function addMember(models, controllers, identifier, actingUser, username, callba
               ' added to group ' + identifier + '.',
             });
           });
+      });
     });
   });
 }
@@ -266,12 +297,36 @@ function removeMember(models, controllers, identifier, actingUser, username, cal
         return;
       }
 
+      if (!group.owners.includes(actingUser) && user.username != actingUser) {
+        callback(403, {
+          'message': 'Only group owners can remove members other than themselves.',
+        });
+
+        return;
+      }
+
+      if (group.owners.length <= 1 && group.owners.includes(user.username)) {
+        callback(403, {
+          'message': 'The last owner of the group cannot be removed.',
+        });
+
+        return;
+      }
+
       // Remove the member from the group
-      for(var i = 0; i < group.members.length; i++) {
+      for (var i = 0; i < group.members.length; i++) {
         if(group.members[i].username == user.username) {
             group.members.splice(i, 1);
             break;
         }
+      }
+
+      // If the member was an owner, remove them from the owner list
+      for (var i = 0; i < group.owners.length; i++) {
+        if(group.owners[i] == user.username) {
+          group.members.splice(i, 1);
+          break;
+      }
       }
 
       group.save();
@@ -428,6 +483,14 @@ function deleteGroup(models, identifier, actingUser, callback) {
     }
 
     if (group) {
+
+      if (!group.owners.includes(actingUser)) {
+        callback(403, {
+          'message': 'Only group owners can delete the group.',
+        });
+
+        return;
+      }
       // First delete this group from all user lists.
       group.members.forEach(function(member) {
         models.User.update(

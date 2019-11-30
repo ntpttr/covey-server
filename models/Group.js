@@ -41,6 +41,7 @@ const GroupSchema = new mongoose.Schema({
   },
   displayName: {type: String},
   description: {type: String},
+  owners: [{type: String}],
   members: [MemberSchema],
   games: [GameSchema],
 });
