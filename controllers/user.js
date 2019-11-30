@@ -446,7 +446,7 @@ function deleteUser(models, username, callback) {
       // If the user is the last member of a group,
       // delete the group.
       user.groups.forEach(function(group) {
-        if (group.members.length >= 1) {
+        if (group.members.length > 1) {
           models.Group.update({
             _id: group._id,
           }, {
