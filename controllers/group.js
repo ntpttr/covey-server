@@ -66,24 +66,24 @@ function createGroup(models, controllers, creator, properties, callback) {
           return;
         }
       }
-    });
 
-    controllers.user.addGroupLink(
-      models, user.username, group._id, function(addStatus, addBody) {
-        if (addStatus != 200) {
-          deleteGroup(models, group.identifier, function(deleteStatus, deleteBody) {
-            callback(500, {
-              'message': 'Something went wrong adding creator to the group.',
+      controllers.user.addGroupLink(
+        models, user.username, group._id, function(addStatus, addBody) {
+          if (addStatus != 200) {
+            deleteGroup(models, group.identifier, function(deleteStatus, deleteBody) {
+              callback(500, {
+                'message': 'Something went wrong adding creator to the group.',
+              });
+    
+              return;
             });
+          }
   
-            return;
+          callback(201, {
+            'group': group
           });
-        }
-
-        callback(201, {
-          'group': group
         });
-      });
+    });
   });
 }
 
