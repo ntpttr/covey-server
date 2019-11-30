@@ -90,7 +90,7 @@ router.delete('/:identifier', auth.required, function(req, res) {
 });
 
 /**
- * Add a new member to a group
+ * Add or remove a member from a group
  */
 router.post('/:identifier/members', auth.required, function(req, res) {
   const models = req.models;
@@ -98,8 +98,10 @@ router.post('/:identifier/members', auth.required, function(req, res) {
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
   const username = req.body.username;
+  const action = req.body.action;
 
-  controllers.group.addMember(
+  if (action == "add") {
+    controllers.group.addMember(
       models,
       controllers,
       identifier,
@@ -108,19 +110,8 @@ router.post('/:identifier/members', auth.required, function(req, res) {
       function(status, body) {
         res.status(status).json(body);
       });
-});
-
-/**
- * Remove a member from a group
- */
-router.delete('/:identifier/members', auth.required, function(req, res) {
-  const models = req.models;
-  const controllers = req.controllers;
-  const actingUser = req.payload.username;
-  const identifier = req.params.identifier;
-  const username = req.body.username;
-
-  controllers.group.removeMember(
+  } else if (action == "remove") {
+    controllers.group.removeMember(
       models,
       controllers,
       identifier,
@@ -129,46 +120,47 @@ router.delete('/:identifier/members', auth.required, function(req, res) {
       function(status, body) {
         res.status(status).json(body);
       });
+  } else {
+    res.status(400).json({
+      'message': 'Action must be "add" or "remove"',
+    });
+  }
 });
 
 /**
- * Add a game to a group
+ * Add or remove a game from a group
  */
 router.post('/:identifier/games', auth.required, function(req, res, next) {
   const models = req.models;
   const controllers = req.controllers;
   const actingUser = req.payload.username;
   const identifier = req.params.identifier;
-  const gameProperties = req.body;
+  const game = req.body.game;
+  const action = req.body.action;
 
-  controllers.group.addGame(
+  if (action == "add") {
+    controllers.group.addGame(
       models,
       identifier,
       actingUser,
-      gameProperties,
+      game,
       function(status, body) {
         res.status(status).json(body);
       });
-});
-
-/**
- * Remove a game from a group
- */
-router.delete('/:identifier/games', auth.required, function(req, res) {
-  const models = req.models;
-  const controllers = req.controllers;
-  const actingUser = req.payload.username;
-  const identifier = req.params.identifier;
-  const gameName = req.body.game;
-
-  controllers.group.deleteGame(
+  } else if (action == "remove") {
+    controllers.group.deleteGame(
       models,
       identifier,
       actingUser,
-      gameName,
+      game,
       function(status, body) {
         res.status(status).json(body);
       });
+  } else {
+    res.status(400).json({
+      'message': 'Action must be "add" or "remove"',
+    });
+  }
 });
 
 module.exports = router;
