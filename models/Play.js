@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
  * The schema for each player of an individual play of a game.
  */
 const PlayerSchema = new mongoose.Schema({
-  user: {type: String},
+  username: {type: String},
   score: {type: Number},
   placement: {type: Number},
 }, {_id: false});

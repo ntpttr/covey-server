@@ -35,6 +35,23 @@ function addPlay(models, controllers, actingUser, gameName, groupIdent, players,
       return;
     }
 
+    // Check that the requested players are members of the group
+    let playersNotInGroup = [];
+    players.forEach(function(player) {
+      if (!group.members.some(member => member.username === player.username)) {
+        playersNotInGroup.push(player.username);
+      }
+    });
+
+    if (playersNotInGroup.length > 0) {
+      callback(400, {
+        'message': "Provided players that are not " +
+                   "a member of the group: " + playersNotInGroup.join(", "),
+      });
+
+      return;
+    }
+
     play = new models.Play({
       game: gameName,
       group: groupIdent,
