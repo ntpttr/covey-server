@@ -1,0 +1,15 @@
+version: "3"
+services:
+  covey-api:
+    build: .
+    ports:
+    - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+    depends_on:
+    - mongo
+  mongo:
+    image: mongo
+    ports:
+    - "27017:27017"

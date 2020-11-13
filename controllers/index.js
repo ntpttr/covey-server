@@ -1,10 +1,10 @@
-const game = require('./game');
+//const game = require('./game');
 const group = require('./group');
 const play = require('./play');
 const user = require('./user');
 
 module.exports = {
-  game,
+//  game,
   group,
   play,
   user,

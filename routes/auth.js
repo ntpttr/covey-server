@@ -19,12 +19,14 @@ const auth = {
   required: jwt({
     secret: secret,
     userProperty: 'payload',
+    algorithms: ['sha1', 'RS256', 'HS256'],
     getToken: getTokenFromHeader,
   }),
   optional: jwt({
     secret: secret,
     userProperty: 'payload',
     credentialsRequired: false,
+    algorithms: ['sha1', 'RS256', 'HS256'],
     getToken: getTokenFromHeader,
   }),
 };

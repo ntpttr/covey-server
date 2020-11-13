@@ -28,11 +28,11 @@ router.use('/groups', function(req, res, next) {
 }, require('./group'));
 
 // Add /games routes
-router.use('/games', function(req, res, next) {
-  req.models = models;
-  req.controllers = controllers;
-  next();
-}, require('./game'));
+// router.use('/games', function(req, res, next) {
+//  req.models = models;
+//  req.controllers = controllers;
+//  next();
+//}, require('./game'));
 
 // Add /plays routes
 router.use('/plays', function(req, res, next) {
