@@ -21,35 +21,6 @@ router.post('/login', function(req, res, next) {
 });
 
 /**
- * Confirm a user account
- */
-router.get('/confirm/:token', function(req, res) {
-  const models = req.models;
-  const controllers = req.controllers;
-  const token = req.params.token;
-
-  controllers.user.confirmUser(
-      models, token, function(status, body) {
-        res.status(status).json(body);
-      });
-});
-
-/**
- * Resend a user confirmation email
- */
-router.post('/resend/:username', function(req, res) {
-  const models = req.models;
-  const controllers = req.controllers;
-  const username = req.params.username;
-  const host = req.headers.host;
-
-  controllers.user.resendConfirmation(
-      models, username, host, function(status, body) {
-        res.status(status).json(body);
-      });
-});
-
-/**
  * Create a new user
  */
 router.post('/', function(req, res) {

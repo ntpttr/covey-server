@@ -37,14 +37,6 @@ function authenticate(creds, callback) {
     }
 
     if (user) {
-      if (!user.isVerified) {
-        callback(403, {
-          'message': 'Your account has not been verified.',
-        });
-
-        return;
-      }
-
       callback(200, {
         'user': user,
       });
@@ -95,14 +87,6 @@ function confirmUser(models, token, callback) {
         return;
       }
 
-      if (user.isVerified) {
-        callback(400, {
-          'message': 'This user has already been verified',
-        });
-
-        return;
-      }
-
       user.isVerified = true;
       user.save(function(err) {
         if (err) {
@@ -114,7 +98,7 @@ function confirmUser(models, token, callback) {
         }
 
         callback(200, {
-          'message': 'The account has been verified. Please log in.',
+          'message': 'The account has been verified.',
         });
       });
     });
@@ -154,7 +138,7 @@ function resendConfirmation(models, username, host, callback) {
       return;
     }
 
-    sendConfirmationEmail(models, user, host, callback);
+    sendConfirmationEmail(models, user, host);
   });
 }
 
@@ -229,17 +213,8 @@ function createUser(models, properties, host, callback) {
       }
     }
 
-    sendConfirmationEmail(models, user, host, function(sendStatus, sendBody) {
-      if (sendStatus != 200) {
-        callback(200, {
-          'message': 'User created but system failed to send confirmation email. Try again later.',
-        });
 
-        return;
-      }
-
-      callback(sendStatus, sendBody);
-    });
+    callback(201, {'user': user})
   });
 }
 
@@ -483,7 +458,12 @@ function deleteUser(models, username, callback) {
  * @param {string} host = The host for the email verification URL.
  * @param {function} callback - The callback function.
  */
-function sendConfirmationEmail(models, user, host, callback) {
+function sendConfirmationEmail(models, user, host) {
+  // Don't send confirmation emails for dev environment
+  if (process.env.NODE_ENV == "development") {
+    return;
+  }
+
   // Create a validation key for this user
   const validationKey = new models.ValidationKey({
     userId: user._id,
@@ -514,16 +494,8 @@ function sendConfirmationEmail(models, user, host, callback) {
 
     sgMail.send(msg, function(err) {
       if (err) {
-        callback(500, {
-          'error': err,
-        });
-
-        return;
+        console.log("Error sending confirmation email!")
       }
-
-      callback(200, {
-        'message': 'Confirmation email sent to ' + user.email,
-      });
     });
   });
 }

@@ -5,13 +5,13 @@ const config = require('./config');
 const dotenv = require('dotenv');
 const express = require('express');
 const session = require('express-session');
-const bodyParser =require('body-parser');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 // TODO(ntpttr): If we end up with a production mongodb somehow
 // update this url from development to production.
 dotenv.config();
-const url = process.env.MONGODB_URI || config.db.development;
+const mongo_url = process.env.MONGODB_URI || config.db.development;
 const port = parseInt(process.env.PORT, 10) || 3000;
 const testing = module.parent == null ?
     false : module.parent.filename.indexOf('test') != -1;
@@ -42,13 +42,13 @@ app.use(session({
 
 if (!testing) {
   mongoose.connect(
-      url,
-      {
-        useNewUrlParser: true,
-        useCreateIndex: true,
-      }, function(err) {
-        if (err) throw err;
-      });
+    mongo_url,
+    {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+    }, function(err) {
+      if (err) throw err;
+    });
 }
 
 require('./config/passport');

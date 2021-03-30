@@ -34,7 +34,6 @@ const UserSchema = new mongoose.Schema({
   image: String,
   hash: String,
   salt: String,
-  isVerified: {type: Boolean, default: false},
   passwordResetToken: String,
   passwordResetExpires: Date,
 }, {timestamps: true});
