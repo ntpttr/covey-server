@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/ntpttr/Covey.git"
+    "url": "git+ssh://git@github.com/ntpttr/covey-server.git"
   },
   "author": "Nate Potter <ntpttr@outlook.com>",
   "contributors": [
@@ -18,9 +18,9 @@
   ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ntpttr/Covey-Server/issues"
+    "url": "https://github.com/ntpttr/covey-server/issues"
   },
-  "homepage": "https://github.com/ntpttr/Covey-Server#readme",
+  "homepage": "https://github.com/ntpttr/covey-server#readme",
   "dependencies": {
     "@sendgrid/mail": "^7.4.2",
     "bcrypt": "^5.0.1",
